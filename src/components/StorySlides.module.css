@@ -1,0 +1,196 @@
+.wrap {
+  width: min(100%, 940px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+/*
+  넓은 화면에서는 그림을 왼쪽에 크게, 글을 오른쪽에 둔다.
+  design.md 4장의 "중앙 그림 + 사이드 패널, 태블릿 세로에서는 하단으로 재배치"를
+  퍼즐 화면·도감과 같은 방식으로 따른 것이다.
+  교실 화면(16:9)은 가로가 남고 세로가 모자라므로, 옆으로 놓아야 그림이 가장 커진다.
+*/
+.slide {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xl);
+  padding: var(--space-xl);
+  background: var(--bg-field);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+  animation: slideIn 320ms var(--ease-soft) both;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.title {
+  font-size: var(--size-heading);
+  color: var(--gold);
+}
+
+.text {
+  /* 한 컷당 1~2문장 (design.md 8장) — 크고 넉넉하게 */
+  font-size: 20px;
+  line-height: 1.9;
+  color: var(--text-primary);
+  white-space: pre-line;
+}
+
+/* ---------------- 삽화 자리 ---------------- */
+/* 삽화와 별자리 도형을 같은 칸에 겹쳐 놓기 위한 상자 */
+.figureBox {
+  position: relative;
+  flex: 0 0 auto;
+  /* 세로가 모자란 화면에서도 잘리지 않도록 화면 높이까지 함께 본다 */
+  width: min(46vw, 52vh, 420px);
+  aspect-ratio: 1;
+  border-radius: var(--radius-card);
+  background: rgba(11, 12, 31, 0.55);
+  border: 1px solid var(--hairline);
+  overflow: hidden;
+}
+
+.art,
+.figure,
+.overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 삽화 위에 겹쳐 그리는 별자리 */
+.overlay {
+  pointer-events: none;
+}
+
+/* ---------------- 별자리 선 ----------------
+   잉크로 그은 선이 아니라 별과 별을 잇는 빛줄기로 보이게 두 겹으로 긋는다.
+   아래에 넓고 흐린 빛, 위에 가늘고 밝은 심지. */
+.lineGlow {
+  stroke: var(--gold);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  opacity: 0.18;
+}
+
+.lineCore {
+  stroke: #fff3cf;
+  stroke-width: 0.42;
+  stroke-linecap: round;
+  opacity: 0.9;
+}
+
+/* ---------------- 별빛 ----------------
+   빛무리 + 십자 광채 + 밝은 심지. 삽화 속 별과 같은 결로 보이게 한다. */
+.glint {
+  animation: starBreath 4.5s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes starBreath {
+  0%,
+  100% {
+    opacity: 0.82;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.spike {
+  fill: #fffdf4;
+}
+
+.spikeGold {
+  fill: #ffe9a8;
+}
+
+.core {
+  fill: #ffffff;
+}
+
+.coreGold {
+  fill: #fffaeb;
+}
+
+/* ---------------- 컷 표시 점 ---------------- */
+.dots {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  min-height: 0;
+  padding: 0;
+  border-radius: var(--radius-round);
+  background: rgba(228, 231, 240, 0.25);
+  transition: background 200ms var(--ease-soft), transform 200ms var(--ease-soft);
+}
+
+.dotActive {
+  background: var(--gold);
+  transform: scale(1.25);
+}
+
+/* ---------------- 버튼 ---------------- */
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  justify-content: center;
+  align-items: center;
+}
+
+.controls button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ---------------- 태블릿 세로 · 좁은 화면 ---------------- */
+/* 세로가 넉넉한 화면에서는 위아래로 쌓고, 그림을 가로폭에 맞춰 더 키운다 */
+@media (max-width: 860px) {
+  .slide {
+    flex-direction: column;
+    text-align: center;
+    padding: var(--space-lg);
+    gap: var(--space-lg);
+  }
+
+  .body {
+    align-items: center;
+  }
+
+  .figureBox {
+    width: min(100%, 58vh, 420px);
+  }
+
+  .text {
+    font-size: 18px;
+  }
+}

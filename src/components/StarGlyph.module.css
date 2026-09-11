@@ -1,0 +1,33 @@
+.size {
+  transition: transform 1200ms var(--ease-soft);
+}
+
+.light {
+  color: #c5e6ff;
+  animation: shimmer 4.8s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+.gold {
+  color: #f5cf79;
+}
+
+.active {
+  color: #ffe2a0;
+  animation: none;
+}
+
+.rays {
+  fill: currentColor;
+  fill-opacity: 0.88;
+}
+
+.diagonal {
+  fill: currentColor;
+  fill-opacity: 0.4;
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0.72; }
+  50% { opacity: 1; }
+}

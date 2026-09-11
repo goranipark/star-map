@@ -1,0 +1,140 @@
+@import './fonts.css';
+@import './tokens.css';
+
+/* ------------------------------------------------------------------
+   전역 기본값 — design.md 8장 Do/Don't 반영
+   · 그림자 없음(헤어라인 + 글로우로만 입체감 표현)
+   · 한글 자간 0 (라벨류만 따로 넓힘)
+------------------------------------------------------------------ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background-color: var(--bg-sky);
+  background-image: var(--bg-nebula);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--size-body);
+  line-height: 1.7;
+  letter-spacing: 0;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden; /* 퍼즐판은 전체화면 고정 레이아웃 */
+}
+
+/* 아이들이 별을 드래그할 때 글자·이미지가 딸려 선택되는 것을 막는다 */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font-family: var(--font-body);
+  font-size: inherit;
+  color: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+  min-height: var(--touch-min);
+}
+
+/* 키보드 사용자를 위한 포커스 링 (골드 글로우) */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/* ------------------------------------------------------------------
+   재사용 유틸리티 클래스
+------------------------------------------------------------------ */
+
+/* "STAGE 01", "2/5 별자리 완성" 같은 라벨 — 자간을 넓혀 쓴다 */
+.eyebrow {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--size-eyebrow);
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+/* 수치 표기 — "관측 기록" 느낌 */
+.mono {
+  font-family: var(--font-mono);
+  font-size: var(--size-mono);
+}
+
+/* 헤어라인 카드 — 그림자 없이 1px 테두리만 */
+.card {
+  background: var(--bg-field);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+}
+
+/* 골드 채움형 버튼 (design.md 5장: 초등 대상은 테두리형 대신 채움형) */
+.btnPrimary {
+  padding: var(--space-md) var(--space-xl);
+  border-radius: var(--radius-button);
+  background: var(--gold);
+  color: #1a1508;
+  font-weight: 700;
+  box-shadow: var(--glow-gold);
+  transition: transform 160ms var(--ease-soft), box-shadow 160ms var(--ease-soft);
+}
+.btnPrimary:hover {
+  box-shadow: var(--glow-gold-strong);
+}
+.btnPrimary:active {
+  transform: scale(0.97);
+}
+
+/* 보조 버튼 — 헤어라인 테두리 */
+.btnGhost {
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-button);
+  border: 1px solid var(--hairline-strong);
+  color: var(--text-primary);
+  background: rgba(28, 32, 56, 0.5);
+  transition: border-color 160ms var(--ease-soft);
+}
+.btnGhost:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* 움직임을 줄이도록 설정한 기기에서는 애니메이션을 최소화한다 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

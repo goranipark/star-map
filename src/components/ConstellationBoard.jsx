@@ -1,0 +1,572 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import styles from './ConstellationBoard.module.css';
+import StarGlyph from './StarGlyph.jsx';
+import { fitBoardCamera } from '../game/boardCamera.js';
+
+import { allSkyStars } from '../game/sky.js';
+import { answerLineSet, lineKey } from '../game/constellations.js';
+import {
+  SKY,
+  boundingCircleOf,
+  focusRotation,
+  projectStar,
+  radiusForMagnitude,
+} from '../game/projection.js';
+
+/** 별자리 완성 후 이야기 화면으로 넘어가기까지 축하 연출을 보여주는 시간. */
+const CELEBRATE_MS = 1800;
+/** 오답 선이 붉게 떴다가 사라지는 시간 (design.md 6장). */
+const WRONG_MS = 400;
+/** 스테이지 시작 시 밤하늘 전체를 보여주는 시간. 그 뒤 별자리로 확대한다. */
+const OVERVIEW_MS = 1100;
+
+/** 값을 최소~최대 사이로 자른다. */
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+/**
+ * 별 잇기 퍼즐판.
+ *
+ * 두 가지 모드를 지원한다 (ToDo.md Phase 3).
+ *  - mode="puzzle" : 정답 연결선과 대조해 판정. 스테이지 1~5에서 사용.
+ *  - mode="free"   : 정답 없이 이은 선을 그대로 유지. Phase 4-B 나만의 성좌에서 사용.
+ *
+ * 조작은 두 가지를 모두 받는다.
+ *  - 별을 탭 → 다른 별을 탭
+ *  - 별에서 다른 별로 드래그
+ */
+export default function ConstellationBoard({
+  constellation,
+  completedConstellations = [],
+  mode = 'puzzle',
+  showAnswer = false,
+  onComplete,
+  onProgress,
+  /** 자유 연결 모드에서 이은 선이 바뀔 때마다 알려 준다 — [[별id, 별id], ...] */
+  onLinesChange,
+  /** 값이 바뀌면 그은 선을 전부 지운다 ("전체 지우기" 버튼용) */
+  clearToken = 0,
+  fitViewport = false,
+}) {
+  const free = mode === 'free';
+  const groupRef = useRef(null);
+  const svgRef = useRef(null);
+  const overviewTimer = useRef(null);
+  const [viewport, setViewport] = useState({ width: 500, height: 500 });
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const viewHeight = fitViewport ? (100 * viewport.height) / viewport.width : 100;
+
+  useEffect(() => {
+    if (!fitViewport || !svgRef.current) return undefined;
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (width > 0 && height > 0) setViewport({ width, height });
+    });
+    observer.observe(svgRef.current);
+    return () => observer.disconnect();
+  }, [fitViewport]);
+
+  /**
+   * 아이들이 별을 아주 빠르게 연달아 누르면 React가 상태 갱신을 한 번에 모으는 탓에
+   * 직전 탭의 결과를 못 보고 연결을 놓칠 수 있다.
+   * 그래서 판정에 쓰는 값은 ref로도 들고 있으면서 항상 최신 값을 보게 한다.
+   */
+  const drawnRef = useRef(new Map());
+  const selectedRef = useRef(null);
+
+  const [drawn, setDrawn] = useState(() => new Map()); // key -> [aId, bId]
+  const [wrong, setWrong] = useState([]); // [{ id, a, b }]
+  const [selectedId, setSelectedId] = useState(null);
+  const dragRef = useRef(null); // { fromId, moved }
+  const [dragPos, setDragPos] = useState(null); // 고무줄 선을 그리기 위한 좌표
+  const [celebrating, setCelebrating] = useState(false);
+  const [zoomed, setZoomed] = useState(false);
+
+  const answers = useMemo(
+    () => (mode === 'puzzle' ? answerLineSet(constellation) : new Set()),
+    [constellation, mode]
+  );
+
+  /* ---------------------------------------------------------------
+     세로 화면은 아래쪽, 가로 화면은 오른쪽으로 별자리를 배치한다.
+  --------------------------------------------------------------- */
+  const rotation = useMemo(
+    () => (free ? 0 : focusRotation(constellation, fitViewport && viewHeight < 80 ? 270 : 180)),
+    [constellation, free, fitViewport, viewHeight]
+  );
+
+  /** 모든 별을 현재 회전값으로 화면 좌표에 찍는다. */
+  const stars = useMemo(() => {
+    const memberIds = new Set(free ? [] : constellation.stars.map((s) => s.id));
+    return allSkyStars.map((s) => ({
+      ...s,
+      ...projectStar(s.ra, s.dec, rotation),
+      isMember: memberIds.has(s.id),
+    }));
+  }, [rotation, constellation, free]);
+
+  const starById = useMemo(
+    () => Object.fromEntries(stars.map((s) => [s.id, s])),
+    [stars]
+  );
+
+  /* ---------------------------------------------------------------
+     확대 위치 — 별자리 전체 + 북극성이 함께 들어오도록 잡는다.
+     북극성을 항상 화면에 남겨 두는 것이 concept.md의 핵심이라 반드시 포함한다.
+  --------------------------------------------------------------- */
+  const focus = useMemo(() => {
+    // 자유 연결 모드는 밤하늘 전체가 무대이므로 확대하지 않는다.
+    if (free) return { scale: 1, x: SKY.cx, y: SKY.cy, labelX: SKY.cx, labelY: SKY.cy };
+
+    const members = constellation.stars.map((s) => starById[s.id]).filter(Boolean);
+    const shape = boundingCircleOf(members);
+    // 북극성(성도판 중심)을 반드시 화면에 남긴다 — concept.md의 핵심이다.
+    const circle = boundingCircleOf([...members, { x: SKY.cx, y: SKY.cy }]);
+    const fitted = fitViewport
+      ? fitBoardCamera([...members, { x: SKY.cx, y: SKY.cy }], 100, viewHeight)
+      : { scale: clamp(SKY.radius / (circle.radius + 7), 1, 2.4), x: circle.x, y: circle.y };
+    return {
+      ...fitted,
+      // 완성 이름표는 별자리 그림과 겹치지 않게 그림 아래에 놓는다.
+      labelX: shape.x,
+      labelY: shape.y + shape.radius + 5,
+    };
+  }, [constellation, starById, free, fitViewport, viewHeight]);
+
+  const overviewScale = Math.min(100, viewHeight) / 100;
+  const maxScale = Math.max(overviewScale, focus.scale);
+  const scale = zoomed ? overviewScale + (maxScale - overviewScale) * zoomLevel : overviewScale;
+  const centerX = zoomed ? focus.x : SKY.cx;
+  const centerY = zoomed ? focus.y : SKY.cy;
+  const transform = `translate(${50 - scale * centerX} ${viewHeight / 2 - scale * centerY}) scale(${scale})`;
+
+  /** 별을 누른 것으로 인정할 반경. 확대해도 손가락 크기는 그대로이므로 배율로 나눈다. */
+  const hitRadius = fitViewport ? 22 * 100 / viewport.width / scale : clamp(3.6 / scale, 1.7, 4.4);
+
+  /**
+   * 확대하면 도형이 통째로 커지므로, 별 크기와 선 굵기는 배율로 나눠 두어
+   * 화면에 보이는 크기를 일정하게 유지한다.
+   * 그래야 "별이 클수록 밝은 별"이라는 규칙이 스테이지마다 흔들리지 않는다.
+   */
+  const starScale = (r) => r / scale;
+  const lineWidth = (w) => w / scale;
+  /** 발광 반경도 같은 이유로 배율 보정한다. 안 하면 확대할수록 별이 뭉개진다. */
+  const glow = (radius, color) => `drop-shadow(0 0 ${(radius / scale).toFixed(3)}px ${color})`;
+
+  /* ---------------------------------------------------------------
+     스테이지가 바뀌면 판을 새로 깐다.
+  --------------------------------------------------------------- */
+  useEffect(() => {
+    drawnRef.current = new Map();
+    selectedRef.current = null;
+    dragRef.current = null;
+    setDrawn(new Map());
+    setWrong([]);
+    setSelectedId(null);
+    setDragPos(null);
+    setCelebrating(false);
+    setZoomed(false);
+    setZoomLevel(1);
+
+    if (free) return undefined; // 자유 모드는 확대하지 않는다
+    overviewTimer.current = setTimeout(() => setZoomed(true), OVERVIEW_MS);
+    return () => clearTimeout(overviewTimer.current);
+  }, [constellation.id, clearToken, free]);
+
+  /* ---------------------------------------------------------------
+     완성 판정
+  --------------------------------------------------------------- */
+  // 정답 선을 다 그었는지 확인한다.
+  useEffect(() => {
+    if (mode !== 'puzzle' || celebrating) return;
+    if (answers.size === 0 || drawn.size < answers.size) return;
+
+    setCelebrating(true);
+    selectedRef.current = null;
+    setSelectedId(null);
+  }, [drawn, answers, mode, celebrating]);
+
+  // 축하 연출을 보여준 뒤 이야기 화면으로 넘긴다.
+  // 위 효과와 반드시 나눠 두어야 한다 — 한 곳에 두면 celebrating이 바뀌는 순간
+  // 효과가 다시 실행되면서 방금 건 타이머를 스스로 취소해 버린다.
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
+
+  useEffect(() => {
+    if (!celebrating) return;
+    const t = setTimeout(() => onCompleteRef.current?.(), CELEBRATE_MS);
+    return () => clearTimeout(t);
+  }, [celebrating]);
+
+  useEffect(() => {
+    onProgress?.({ drawn: drawn.size, total: answers.size });
+  }, [drawn, answers, onProgress]);
+
+  // 자유 연결 모드에서 이은 선 목록을 부모에게 넘겨 준다
+  const onLinesChangeRef = useRef(onLinesChange);
+  onLinesChangeRef.current = onLinesChange;
+
+  useEffect(() => {
+    if (!free) return;
+    onLinesChangeRef.current?.([...drawn.values()]);
+  }, [drawn, free]);
+
+  /* ---------------------------------------------------------------
+     연결 시도
+  --------------------------------------------------------------- */
+  const tryConnect = useCallback(
+    (aId, bId) => {
+      if (celebrating || aId === bId) return;
+      const key = lineKey(aId, bId);
+
+      if (drawnRef.current.has(key)) {
+        // 퍼즐 모드에서는 이미 그은 선을 무시하고,
+        // 자유 모드에서는 한 번 더 이으면 그 선을 지운다 (선 지우기).
+        if (!free) return;
+        const next = new Map(drawnRef.current);
+        next.delete(key);
+        drawnRef.current = next;
+        setDrawn(next);
+        return;
+      }
+
+      if (free || answers.has(key)) {
+        const next = new Map(drawnRef.current).set(key, [aId, bId]);
+        drawnRef.current = next;
+        setDrawn(next);
+        return;
+      }
+
+      // 오답 — 붉게 보여 주고 조용히 사라진다. 감점도 경고음도 없다.
+      const id = `${key}-${Date.now()}`;
+      setWrong((prev) => [...prev, { id, a: aId, b: bId }]);
+      setTimeout(() => {
+        setWrong((prev) => prev.filter((w) => w.id !== id));
+      }, WRONG_MS);
+    },
+    [answers, free, celebrating]
+  );
+
+  /* ---------------------------------------------------------------
+     포인터(마우스·손가락) 처리
+  --------------------------------------------------------------- */
+  const toSkyPoint = useCallback((event) => {
+    const g = groupRef.current;
+    const ctm = g?.getScreenCTM();
+    if (!ctm) return null;
+    const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(
+      ctm.inverse()
+    );
+    return { x: point.x, y: point.y };
+  }, []);
+
+  const starAt = useCallback(
+    (point) => {
+      if (!point) return null;
+      let best = null;
+      let bestDistance = Infinity;
+      for (const s of stars) {
+        const d = Math.hypot(s.x - point.x, s.y - point.y);
+        if (d < bestDistance) {
+          bestDistance = d;
+          best = s;
+        }
+      }
+      return bestDistance <= hitRadius ? best : null;
+    },
+    [stars, hitRadius]
+  );
+
+  const select = (id) => {
+    selectedRef.current = id;
+    setSelectedId(id);
+  };
+
+  const handlePointerDown = (event) => {
+    if (celebrating) return;
+    const point = toSkyPoint(event);
+    const star = starAt(point);
+    if (!star) {
+      select(null);
+      return;
+    }
+    // 포인터를 놓칠 때를 대비해 캡처해 둔다. 기기에 따라 실패할 수 있으므로 감싼다.
+    try {
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+    } catch {
+      /* 캡처하지 못해도 연결 동작에는 지장이 없다 */
+    }
+    dragRef.current = { fromId: star.id, moved: false };
+    setDragPos(null);
+  };
+
+  const handlePointerMove = (event) => {
+    const drag = dragRef.current;
+    if (!drag) return;
+    const point = toSkyPoint(event);
+    if (!point) return;
+    const from = starById[drag.fromId];
+    if (!drag.moved && Math.hypot(point.x - from.x, point.y - from.y) > 1.5) {
+      drag.moved = true;
+    }
+    if (drag.moved) setDragPos(point);
+  };
+
+  const handlePointerUp = (event) => {
+    const drag = dragRef.current;
+    if (!drag) return;
+    const point = toSkyPoint(event);
+    const target = starAt(point);
+
+    if (target && target.id !== drag.fromId) {
+      // 드래그해서 다른 별에 놓았다
+      tryConnect(drag.fromId, target.id);
+      select(null);
+    } else if (!drag.moved) {
+      // 제자리에서 탭했다 — 탭 두 번으로 잇는 방식
+      const selected = selectedRef.current;
+      if (selected && selected !== drag.fromId) {
+        tryConnect(selected, drag.fromId);
+        select(null);
+      } else {
+        select(selected === drag.fromId ? null : drag.fromId);
+      }
+    }
+    dragRef.current = null;
+    setDragPos(null);
+  };
+
+  /* ---------------------------------------------------------------
+     렌더링
+  --------------------------------------------------------------- */
+  const dragFrom = dragPos ? starById[dragRef.current?.fromId] : null;
+
+  const changeView = (level, overview = false) => {
+    clearTimeout(overviewTimer.current);
+    dragRef.current = null;
+    setDragPos(null);
+    select(null);
+    setZoomLevel(clamp(level, 0, 1));
+    setZoomed(!overview);
+  };
+
+  return (
+    <>
+    <svg
+      ref={svgRef}
+      className={`${styles.board} ${fitViewport ? styles.fluidBoard : ''}`}
+      viewBox={`0 0 100 ${viewHeight}`}
+      role="application"
+      aria-label={`${constellation.name} 별 잇기 퍼즐`}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={() => {
+        dragRef.current = null;
+        setDragPos(null);
+      }}
+    >
+      <g
+        ref={groupRef}
+        className={styles.sky}
+        transform={transform}
+        data-celebrating={celebrating || undefined}
+      >
+        {/* 성도판 테두리와 적위 눈금 */}
+        <circle
+          cx={SKY.cx}
+          cy={SKY.cy}
+          r={SKY.radius}
+          className={styles.skyEdge}
+          style={{ strokeWidth: lineWidth(0.25) }}
+        />
+        {[75, 60].map((dec) => (
+          <circle
+            key={dec}
+            cx={SKY.cx}
+            cy={SKY.cy}
+            r={(SKY.radius * (90 - dec)) / (90 - SKY.decMin)}
+            className={styles.skyGuide}
+            style={{ strokeWidth: lineWidth(0.12) }}
+          />
+        ))}
+
+        {/* 이미 완성한 별자리 — 은은한 골드로 남겨 하늘이 채워지는 것을 보여준다 */}
+        {completedConstellations.map((c) => (
+          <g key={c.id} className={styles.doneGroup}>
+            {c.lines.map(([a, b]) =>
+              starById[a] && starById[b] ? (
+                <line
+                  key={`${a}-${b}`}
+                  x1={starById[a].x}
+                  y1={starById[a].y}
+                  x2={starById[b].x}
+                  y2={starById[b].y}
+                  className={styles.doneLine}
+                  style={{ strokeWidth: lineWidth(0.3) }}
+                />
+              ) : null
+            )}
+          </g>
+        ))}
+
+        {/* 도움말 — 정답 모양 미리 보기 */}
+        {showAnswer && !celebrating && (
+          <g className={styles.answerHint}>
+            {constellation.lines.map(([a, b]) => (
+              <line
+                key={`hint-${a}-${b}`}
+                x1={starById[a].x}
+                y1={starById[a].y}
+                x2={starById[b].x}
+                y2={starById[b].y}
+                className={styles.hintLine}
+                style={{ strokeWidth: lineWidth(0.3), strokeDasharray: `${lineWidth(1)} ${lineWidth(1.4)}` }}
+              />
+            ))}
+          </g>
+        )}
+
+        {/* 배경 별 */}
+        {stars
+          .filter((s) => s.isBackground)
+          .map((s) => (
+            <circle
+              key={s.id}
+              cx={s.x}
+              cy={s.y}
+              r={starScale(radiusForMagnitude(s.mag))}
+              className={styles.bgStar}
+              style={{ animationDelay: `${s.twinkleDelay}s` }}
+            />
+          ))}
+
+        {/* 지금까지 이은 정답 선 */}
+        <g className={styles.drawnGroup}>
+          {[...drawn.values()].map(([a, b]) => (
+            <line
+              key={`${a}-${b}`}
+              x1={starById[a].x}
+              y1={starById[a].y}
+              x2={starById[b].x}
+              y2={starById[b].y}
+              className={styles.drawnLine}
+              style={{
+                strokeWidth: lineWidth(celebrating ? 0.62 : 0.45),
+                filter: celebrating
+                  ? glow(2, 'rgba(232,193,88,0.85)')
+                  : glow(0.8, 'rgba(127,216,232,0.6)'),
+              }}
+            />
+          ))}
+        </g>
+
+        {/* 완성한 선마다 빛의 꼬리와 밝은 중심이 한 번 흐른다. */}
+        {celebrating && (
+          <g aria-hidden="true" pointerEvents="none">
+            {[...drawn.values()].map(([a, b], index) => (
+              <g key={`spark-${a}-${b}`}>
+                {['trail', 'head'].map((part) => (
+                  <line
+                    key={part}
+                    x1={starById[a].x}
+                    y1={starById[a].y}
+                    x2={starById[b].x}
+                    y2={starById[b].y}
+                    pathLength="1"
+                    className={`${styles.completionSpark} ${part === 'head' ? styles.sparkHead : styles.sparkTrail}`}
+                    style={{
+                      strokeWidth: lineWidth(part === 'head' ? 0.72 : 1.1),
+                      filter: glow(part === 'head' ? 0.65 : 1.3, 'rgba(255,215,128,0.9)'),
+                      // 마지막 빛도 1.8초 축하 시간 안에 도착하도록 제한한다.
+                      animationDelay: `${(index / Math.max(1, drawn.size - 1)) * 250}ms`,
+                      animationDuration: `${CELEBRATE_MS - 450}ms`,
+                    }}
+                  />
+                ))}
+              </g>
+            ))}
+          </g>
+        )}
+
+        {/* 오답 선 */}
+        {wrong.map((w) => (
+          <line
+            key={w.id}
+            x1={starById[w.a].x}
+            y1={starById[w.a].y}
+            x2={starById[w.b].x}
+            y2={starById[w.b].y}
+            className={styles.wrongLine}
+            style={{ strokeWidth: lineWidth(0.45) }}
+          />
+        ))}
+
+        {/* 드래그 중인 고무줄 선 */}
+        {dragFrom && (
+          <line
+            x1={dragFrom.x}
+            y1={dragFrom.y}
+            x2={dragPos.x}
+            y2={dragPos.y}
+            className={styles.dragLine}
+            style={{
+              strokeWidth: lineWidth(0.35),
+              strokeDasharray: `${lineWidth(1.2)} ${lineWidth(1.2)}`,
+            }}
+          />
+        )}
+
+        {/* 별자리에 속한 별 */}
+        {stars
+          .filter((s) => !s.isBackground)
+          .map((s) => {
+            const base = radiusForMagnitude(s.mag);
+            // concept.md 3장: 정답 별은 다른 별보다 "살짝" 크게 (난이도 배려)
+            const r = starScale(s.isMember ? base + 0.3 : base);
+            return (
+              <g key={s.id}>
+                {selectedId === s.id && (
+                  <circle
+                    cx={s.x}
+                    cy={s.y}
+                    r={r + starScale(1.8)}
+                    className={styles.selectRing}
+                    style={{ strokeWidth: lineWidth(0.4) }}
+                  />
+                )}
+                <StarGlyph
+                  x={s.x}
+                  y={s.y}
+                  radius={r}
+                  gold={s.isPolaris || (celebrating && s.isMember)}
+                  active={selectedId === s.id || (celebrating && s.isMember)}
+                  delay={s.ra % 4.8}
+                />
+              </g>
+            );
+          })}
+
+        {/* 완성 순간 — 별자리 이름을 띄운다 */}
+        {celebrating && (
+          <text
+            x={fitViewport ? centerX : focus.labelX}
+            y={fitViewport ? centerY + (viewHeight / 2 - 3) / scale : focus.labelY}
+            className={styles.doneName}
+            style={{ fontSize: starScale(5), strokeWidth: lineWidth(1.2) }}
+          >
+            {constellation.name}
+          </text>
+        )}
+      </g>
+    </svg>
+    {fitViewport && (
+      <div className={styles.viewControls} role="group" aria-label="별판 보기 조절">
+        <button type="button" aria-label="별판 축소" disabled={celebrating || !zoomed || zoomLevel <= 0} onClick={() => changeView(zoomLevel - 0.2)}>−</button>
+        <button type="button" aria-label="별판 확대" disabled={celebrating || (zoomed && zoomLevel >= 1)} onClick={() => changeView(zoomed ? zoomLevel + 0.2 : 0.2)}>+</button>
+        <button type="button" aria-pressed={!zoomed} disabled={celebrating} onClick={() => changeView(0, true)}>전체 하늘</button>
+        <button type="button" aria-pressed={zoomed && zoomLevel === 1} disabled={celebrating} onClick={() => changeView(1)}>별자리 맞춤</button>
+      </div>
+    )}
+    </>
+  );
+}

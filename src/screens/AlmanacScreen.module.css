@@ -1,0 +1,233 @@
+.wrap {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+  align-items: stretch;
+}
+
+/* ---------------- 원형 성좌판 ---------------- */
+.mapArea {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+}
+
+.map {
+  width: min(100%, 78vmin);
+  max-height: 100%;
+  aspect-ratio: 1;
+}
+
+.caption {
+  color: var(--gold);
+  letter-spacing: 0.08em;
+}
+
+.edge {
+  fill: none;
+  stroke: var(--hairline-strong);
+  stroke-width: 0.25;
+}
+
+.guide {
+  fill: none;
+  stroke: var(--hairline);
+  stroke-width: 0.12;
+  stroke-dasharray: 1 1.8;
+}
+
+.bgStar {
+  fill: var(--star-white);
+  opacity: 0.3;
+}
+
+/* 완성한 별자리 — 골드로 또렷하게 */
+.done .line {
+  stroke: var(--gold);
+  stroke-width: 0.4;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 0.7px rgba(232, 193, 88, 0.7));
+}
+
+.done .star {
+  fill: var(--star-white);
+}
+
+/* 아직 잇지 않은 별자리 — 별만 흐릿하게 (실루엣 처리, design.md 5장) */
+.todo .star {
+  fill: var(--text-muted);
+  opacity: 0.4;
+}
+
+.polaris {
+  fill: var(--gold);
+  filter: drop-shadow(0 0 1px rgba(232, 193, 88, 0.9));
+}
+
+/* ---------------- 카드 목록 ---------------- */
+.list {
+  flex: 0 0 340px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  overflow-y: auto;
+  padding-right: var(--space-xs);
+}
+
+/* 목록이 화면보다 길어지면 flex가 카드를 눌러 글자가 카드 밖으로 넘친다.
+   스크롤로 처리하도록 카드는 줄어들지 않게 고정한다. */
+.list > * {
+  flex: 0 0 auto;
+}
+
+.listHead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--hairline-strong);
+  margin-bottom: var(--space-sm);
+}
+
+.listTitle {
+  font-size: var(--size-heading);
+  color: var(--text-primary);
+}
+
+/* ---------------- 아래쪽 버튼 ---------------- */
+.footer {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--hairline);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.resetLink {
+  padding: 0;
+  min-height: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.resetLink:hover {
+  color: var(--wrong-red);
+}
+
+.confirm {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.confirmText {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.danger {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-button);
+  border: 1px solid var(--wrong-red);
+  color: var(--wrong-red);
+  font-size: 13px;
+  min-height: 0;
+}
+
+.danger:hover {
+  background: rgba(224, 102, 102, 0.12);
+}
+
+/* ---------------- 태블릿 세로 ---------------- */
+@media (max-width: 960px) {
+  .wrap {
+    flex-direction: column;
+    overflow-y: auto;
+    padding: var(--space-md);
+  }
+
+  .mapArea {
+    flex: 0 0 auto;
+  }
+
+  .map {
+    width: min(100%, 62vmin);
+  }
+
+  .list {
+    flex: 0 0 auto;
+    overflow: visible;
+  }
+}
+
+/* ---------------- 나만의 성좌 (Phase 4-B) ---------------- */
+.mine {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--hairline-strong);
+}
+
+.mineHead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.mineTitle {
+  font-size: 18px;
+  color: var(--gold);
+}
+
+.mineLocked {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-muted);
+  padding: var(--space-md);
+  border: 1px dashed var(--hairline);
+  border-radius: var(--radius-card);
+  text-align: center;
+}
+
+.mineItem {
+  position: relative;
+}
+
+.removeLink {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  min-height: 0;
+  padding: 2px var(--space-sm);
+  font-size: 11px;
+  border-radius: var(--radius-round);
+  border: 1px solid var(--hairline);
+  color: var(--text-muted);
+  background: rgba(11, 12, 31, 0.7);
+}
+
+.removeLink:hover {
+  border-color: var(--wrong-red);
+  color: var(--wrong-red);
+}
+
+.weaveBtn {
+  width: 100%;
+}

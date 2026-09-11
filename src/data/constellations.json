@@ -1,0 +1,715 @@
+{
+  "meta": {
+    "version": 1,
+    "coordinateSystem": "equatorial-j2000",
+    "raUnit": "hours",
+    "decUnit": "degrees",
+    "skyDecMin": 45,
+    "note": "별 좌표는 실제 J2000 적경(ra)·적위(dec)이다. 화면 좌표로는 src/game/projection.js가 북극성 중심 극좌표로 변환한다. card(칭호·권능)와 story(신화 슬라이드)는 작은곰자리만 견본으로 채워 두었고 나머지는 Phase 5에서 채운다.",
+    "artNote": "슬라이드 그림은 public/art/ 안에 \"<별자리id>-<컷번호>.png\" 이름으로 넣는다 (png·jpg 모두 됨). 파일이 없으면 별자리 모양 그림이 자동으로 대신 표시된다. 마지막 컷(isSkyCut)은 \"실제 별자리 위에 옛사람의 상상도를 얹은\" 그림으로, AI가 그린 상상도 위에 앱이 실제 좌표로 계산한 별자리를 겹쳐 그린다 — 그 컷의 AI 삽화에는 별을 그리지 않는다."
+  },
+  "constellations": [
+    {
+      "id": "ursa-minor",
+      "name": "작은곰자리",
+      "aka": "북극성이 있는 별자리",
+      "latinName": "Ursa Minor",
+      "order": 1,
+      "isTutorial": true,
+      "hint": "국자 손잡이 끝에 북극성이 있어요. 북극성에서 시작해 국자 모양을 따라가 보세요.",
+      "stars": [
+        {
+          "id": "umi-alpha",
+          "name": "북극성",
+          "bayer": "α UMi",
+          "ra": 2.5303,
+          "dec": 89.2641,
+          "mag": 1.98,
+          "isPolaris": true
+        },
+        {
+          "id": "umi-delta",
+          "name": "일둔",
+          "bayer": "δ UMi",
+          "ra": 17.5369,
+          "dec": 86.5864,
+          "mag": 4.36
+        },
+        {
+          "id": "umi-epsilon",
+          "name": null,
+          "bayer": "ε UMi",
+          "ra": 16.7662,
+          "dec": 82.0372,
+          "mag": 4.21
+        },
+        {
+          "id": "umi-zeta",
+          "name": null,
+          "bayer": "ζ UMi",
+          "ra": 15.7343,
+          "dec": 77.7944,
+          "mag": 4.29
+        },
+        {
+          "id": "umi-eta",
+          "name": null,
+          "bayer": "η UMi",
+          "ra": 16.2918,
+          "dec": 75.7553,
+          "mag": 4.95
+        },
+        {
+          "id": "umi-gamma",
+          "name": "페르카드",
+          "bayer": "γ UMi",
+          "ra": 15.3455,
+          "dec": 71.8339,
+          "mag": 3.05
+        },
+        {
+          "id": "umi-beta",
+          "name": "코카브",
+          "bayer": "β UMi",
+          "ra": 14.8451,
+          "dec": 74.1556,
+          "mag": 2.08
+        }
+      ],
+      "lines": [
+        [
+          "umi-alpha",
+          "umi-delta"
+        ],
+        [
+          "umi-delta",
+          "umi-epsilon"
+        ],
+        [
+          "umi-epsilon",
+          "umi-zeta"
+        ],
+        [
+          "umi-zeta",
+          "umi-eta"
+        ],
+        [
+          "umi-eta",
+          "umi-gamma"
+        ],
+        [
+          "umi-gamma",
+          "umi-beta"
+        ],
+        [
+          "umi-beta",
+          "umi-zeta"
+        ]
+      ],
+      "story": {
+        "title": "하늘에 걸린 작은 국자",
+        "slides": [
+          {
+            "text": "아주 먼 옛날, 깊은 숲에 곰으로 변해 버린 엄마가 살았어요.\n이름은 칼리스토였습니다.",
+            "art": "art/ursa-minor-1.png"
+          },
+          {
+            "text": "어느 날 사냥을 나온 아들 아르카스가 그 곰과 마주쳤어요.\n아들은 그 곰이 자기 엄마인 줄 전혀 몰랐지요.",
+            "art": "art/ursa-minor-2.png"
+          },
+          {
+            "text": "하늘에서 이를 본 신 제우스는 아들이 활을 쏘기 전에\n둘을 한꺼번에 하늘로 올려 보냈어요.",
+            "art": "art/ursa-minor-3.png"
+          },
+          {
+            "text": "그렇게 엄마는 큰곰자리가 되고,\n아들은 작은곰자리가 되었답니다.",
+            "art": "art/ursa-minor-4.png"
+          },
+          {
+            "text": "작은곰자리 꼬리 끝에서 반짝이는 별이 바로 북극성이에요.\n지금도 길 잃은 사람에게 북쪽을 알려주고 있지요.",
+            "art": "art/ursa-minor-5.png"
+          },
+          {
+            "text": "이것이 밤하늘의 작은곰자리예요.\n꼬리 끝 북극성을 오늘 밤 찾아보세요.",
+            "art": "art/ursa-minor-6.png",
+            "overlay": [
+              "ursa-minor"
+            ],
+            "isSkyCut": true
+          }
+        ]
+      },
+      "art": {
+        "silhouette": null
+      },
+      "card": {
+        "epithet": "길을 잃지 않게 하는",
+        "power": "밤길을 걷는 사람에게 언제나 북쪽을 알려준다."
+      }
+    },
+    {
+      "id": "ursa-major",
+      "name": "큰곰자리",
+      "aka": "북두칠성",
+      "latinName": "Ursa Major",
+      "order": 2,
+      "isTutorial": false,
+      "hint": "일곱 개 별이 커다란 국자를 이뤄요. 국자 끝의 두 별을 이어서 쭉 늘이면 북극성이 나옵니다.",
+      "stars": [
+        {
+          "id": "uma-alpha",
+          "name": "두베",
+          "bayer": "α UMa",
+          "ra": 11.0621,
+          "dec": 61.7508,
+          "mag": 1.79
+        },
+        {
+          "id": "uma-beta",
+          "name": "메라크",
+          "bayer": "β UMa",
+          "ra": 11.0307,
+          "dec": 56.3825,
+          "mag": 2.37
+        },
+        {
+          "id": "uma-gamma",
+          "name": "페크다",
+          "bayer": "γ UMa",
+          "ra": 11.8972,
+          "dec": 53.6947,
+          "mag": 2.44
+        },
+        {
+          "id": "uma-delta",
+          "name": "메그레즈",
+          "bayer": "δ UMa",
+          "ra": 12.2571,
+          "dec": 57.0325,
+          "mag": 3.31
+        },
+        {
+          "id": "uma-epsilon",
+          "name": "알리오트",
+          "bayer": "ε UMa",
+          "ra": 12.9005,
+          "dec": 55.9597,
+          "mag": 1.77
+        },
+        {
+          "id": "uma-zeta",
+          "name": "미자르",
+          "bayer": "ζ UMa",
+          "ra": 13.3988,
+          "dec": 54.9253,
+          "mag": 2.27
+        },
+        {
+          "id": "uma-eta",
+          "name": "알카이드",
+          "bayer": "η UMa",
+          "ra": 13.7923,
+          "dec": 49.3133,
+          "mag": 1.86
+        }
+      ],
+      "lines": [
+        [
+          "uma-alpha",
+          "uma-beta"
+        ],
+        [
+          "uma-beta",
+          "uma-gamma"
+        ],
+        [
+          "uma-gamma",
+          "uma-delta"
+        ],
+        [
+          "uma-delta",
+          "uma-alpha"
+        ],
+        [
+          "uma-delta",
+          "uma-epsilon"
+        ],
+        [
+          "uma-epsilon",
+          "uma-zeta"
+        ],
+        [
+          "uma-zeta",
+          "uma-eta"
+        ]
+      ],
+      "story": {
+        "title": "바다로 내려가지 못한 곰",
+        "slides": [
+          {
+            "text": "칼리스토는 원래 숲을 누비던 씩씩한 사냥꾼이었어요.\n여신 아르테미스를 따르며 지냈지요.",
+            "art": "art/ursa-major-1.png"
+          },
+          {
+            "text": "그러다 여신 헤라의 노여움을 사고 말았어요.\n칼리스토는 커다란 곰으로 변해 버렸답니다.",
+            "art": "art/ursa-major-2.png"
+          },
+          {
+            "text": "훗날 제우스가 칼리스토를 하늘로 올려 큰곰자리로 만들어 주었어요.\n일곱 개 별이 커다란 국자 모양을 이루었지요.",
+            "art": "art/ursa-major-3.png"
+          },
+          {
+            "text": "그런데 헤라는 그것마저 못마땅했어요.\n큰곰이 바닷물에 몸을 담그고 쉬지 못하게 했답니다.",
+            "art": "art/ursa-major-4.png"
+          },
+          {
+            "text": "그래서 북두칠성은 바다 아래로 내려가지 않아요.\n밤새 북극성 둘레를 빙 돌기만 하지요. 지금도 그렇답니다.",
+            "art": "art/ursa-major-5.png"
+          },
+          {
+            "text": "이것이 밤하늘의 큰곰자리예요.\n국자 끝 두 별을 이어 늘이면 북극성이 나옵니다.",
+            "art": "art/ursa-major-6.png",
+            "overlay": [
+              "ursa-major"
+            ],
+            "isSkyCut": true
+          }
+        ]
+      },
+      "art": {
+        "silhouette": null
+      },
+      "card": {
+        "epithet": "바다에 닿지 못하는",
+        "power": "밤새 지지 않고 북극성 둘레를 돌며 길잡이가 된다."
+      }
+    },
+    {
+      "id": "cassiopeia",
+      "name": "카시오페이아자리",
+      "aka": "W자리",
+      "latinName": "Cassiopeia",
+      "order": 3,
+      "isTutorial": false,
+      "hint": "별 다섯 개가 알파벳 W 모양으로 이어져요. 북극성을 사이에 두고 북두칠성 반대편에 있습니다.",
+      "stars": [
+        {
+          "id": "cas-beta",
+          "name": "카프",
+          "bayer": "β Cas",
+          "ra": 0.153,
+          "dec": 59.1497,
+          "mag": 2.28
+        },
+        {
+          "id": "cas-alpha",
+          "name": "쉐다르",
+          "bayer": "α Cas",
+          "ra": 0.6751,
+          "dec": 56.5372,
+          "mag": 2.24
+        },
+        {
+          "id": "cas-gamma",
+          "name": null,
+          "bayer": "γ Cas",
+          "ra": 0.9451,
+          "dec": 60.7167,
+          "mag": 2.47
+        },
+        {
+          "id": "cas-delta",
+          "name": "룩바",
+          "bayer": "δ Cas",
+          "ra": 1.4303,
+          "dec": 60.2353,
+          "mag": 2.68
+        },
+        {
+          "id": "cas-epsilon",
+          "name": "세긴",
+          "bayer": "ε Cas",
+          "ra": 1.9066,
+          "dec": 63.6703,
+          "mag": 3.35
+        }
+      ],
+      "lines": [
+        [
+          "cas-beta",
+          "cas-alpha"
+        ],
+        [
+          "cas-alpha",
+          "cas-gamma"
+        ],
+        [
+          "cas-gamma",
+          "cas-delta"
+        ],
+        [
+          "cas-delta",
+          "cas-epsilon"
+        ]
+      ],
+      "story": {
+        "title": "의자에 앉은 왕비",
+        "slides": [
+          {
+            "text": "아주 먼 옛날, 바닷가 나라에 카시오페이아라는 왕비가 살았어요.\n아름다운 딸 안드로메다를 무척 자랑스러워했지요.",
+            "art": "art/cassiopeia-1.png"
+          },
+          {
+            "text": "어느 날 왕비는 그만 이런 말을 하고 말았어요.\n\"내 딸은 바다의 요정들보다도 아름답단다.\"",
+            "art": "art/cassiopeia-2.png"
+          },
+          {
+            "text": "그 말을 들은 바다의 신 포세이돈이 크게 노했어요.\n바다에서 커다란 괴물을 보냈지요.",
+            "art": "art/cassiopeia-3.png"
+          },
+          {
+            "text": "다행히 영웅 페르세우스가 나타나 안드로메다를 구했어요.\n하지만 왕비는 벌을 피하지 못했답니다.",
+            "art": "art/cassiopeia-4.png"
+          },
+          {
+            "text": "왕비는 의자에 앉은 채로 하늘에 올려졌어요.\n하루의 절반은 거꾸로 매달린 채 북극성 둘레를 돈답니다.",
+            "art": "art/cassiopeia-5.png"
+          },
+          {
+            "text": "이것이 밤하늘의 카시오페이아자리예요.\nW자를 찾으면 북극성도 찾을 수 있어요.",
+            "art": "art/cassiopeia-6.png",
+            "overlay": [
+              "cassiopeia"
+            ],
+            "isSkyCut": true
+          }
+        ]
+      },
+      "art": {
+        "silhouette": null
+      },
+      "card": {
+        "epithet": "거꾸로 매달린 여왕",
+        "power": "일 년 내내 북쪽 하늘을 돌며 W자로 자기 자리를 알린다."
+      }
+    },
+    {
+      "id": "cepheus",
+      "name": "케페우스자리",
+      "aka": "뾰족지붕 집 모양",
+      "latinName": "Cepheus",
+      "order": 4,
+      "isTutorial": false,
+      "hint": "지붕이 뾰족한 오두막집 모양이에요. 지붕 꼭대기가 북극성 쪽을 향합니다.",
+      "stars": [
+        {
+          "id": "cep-alpha",
+          "name": "알데라민",
+          "bayer": "α Cep",
+          "ra": 21.3097,
+          "dec": 62.5856,
+          "mag": 2.45
+        },
+        {
+          "id": "cep-beta",
+          "name": "알피르크",
+          "bayer": "β Cep",
+          "ra": 21.4777,
+          "dec": 70.5608,
+          "mag": 3.23
+        },
+        {
+          "id": "cep-gamma",
+          "name": "에라이",
+          "bayer": "γ Cep",
+          "ra": 23.6558,
+          "dec": 77.6325,
+          "mag": 3.21
+        },
+        {
+          "id": "cep-iota",
+          "name": null,
+          "bayer": "ι Cep",
+          "ra": 22.828,
+          "dec": 66.2003,
+          "mag": 3.51
+        },
+        {
+          "id": "cep-zeta",
+          "name": null,
+          "bayer": "ζ Cep",
+          "ra": 22.1809,
+          "dec": 58.2014,
+          "mag": 3.35
+        }
+      ],
+      "lines": [
+        [
+          "cep-zeta",
+          "cep-alpha"
+        ],
+        [
+          "cep-alpha",
+          "cep-beta"
+        ],
+        [
+          "cep-beta",
+          "cep-gamma"
+        ],
+        [
+          "cep-gamma",
+          "cep-iota"
+        ],
+        [
+          "cep-iota",
+          "cep-zeta"
+        ]
+      ],
+      "story": {
+        "title": "뾰족지붕 집이 된 왕",
+        "slides": [
+          {
+            "text": "케페우스는 카시오페이아 왕비의 남편이자\n안드로메다의 아버지인 왕이었어요.",
+            "art": "art/cepheus-1.png"
+          },
+          {
+            "text": "바다 괴물이 나라를 덮치자,\n왕은 딸을 지키려고 온 힘을 다했어요.",
+            "art": "art/cepheus-2.png"
+          },
+          {
+            "text": "페르세우스가 괴물을 물리치고 안드로메다를 구한 뒤,\n나라에는 다시 평화가 찾아왔지요.",
+            "art": "art/cepheus-3.png"
+          },
+          {
+            "text": "왕도 하늘로 올라가 왕비 곁에 자리를 잡았어요.\n뾰족한 지붕이 있는 작은 집처럼 보이는 별자리랍니다.",
+            "art": "art/cepheus-4.png"
+          },
+          {
+            "text": "이것이 밤하늘의 케페우스자리예요.\n왕비 옆에서 뾰족지붕 집을 찾아보세요.",
+            "art": "art/cepheus-5.png",
+            "overlay": [
+              "cepheus"
+            ],
+            "isSkyCut": true
+          }
+        ]
+      },
+      "art": {
+        "silhouette": null
+      },
+      "card": {
+        "epithet": "딸을 지키려 한 아버지",
+        "power": "왕비 곁에서 뾰족지붕 집처럼 북쪽 하늘을 지킨다."
+      }
+    },
+    {
+      "id": "draco",
+      "name": "용자리",
+      "aka": "작은곰자리를 휘감은 용",
+      "latinName": "Draco",
+      "order": 5,
+      "isTutorial": false,
+      "hint": "꼬리는 북두칠성 쪽에서 시작해 작은곰자리를 크게 휘감고, 머리는 네모난 모양으로 되돌아옵니다. 가장 긴 별자리예요.",
+      "stars": [
+        {
+          "id": "dra-lambda",
+          "name": "기아우사르",
+          "bayer": "λ Dra",
+          "ra": 11.5235,
+          "dec": 69.3311,
+          "mag": 3.82
+        },
+        {
+          "id": "dra-kappa",
+          "name": null,
+          "bayer": "κ Dra",
+          "ra": 12.5581,
+          "dec": 69.7883,
+          "mag": 3.82
+        },
+        {
+          "id": "dra-alpha",
+          "name": "투반",
+          "bayer": "α Dra",
+          "ra": 14.0731,
+          "dec": 64.3758,
+          "mag": 3.65
+        },
+        {
+          "id": "dra-iota",
+          "name": "에다시크",
+          "bayer": "ι Dra",
+          "ra": 15.4155,
+          "dec": 58.9661,
+          "mag": 3.29
+        },
+        {
+          "id": "dra-theta",
+          "name": null,
+          "bayer": "θ Dra",
+          "ra": 16.0315,
+          "dec": 58.5653,
+          "mag": 4.01
+        },
+        {
+          "id": "dra-eta",
+          "name": "아테비네",
+          "bayer": "η Dra",
+          "ra": 16.3999,
+          "dec": 61.5142,
+          "mag": 2.73
+        },
+        {
+          "id": "dra-zeta",
+          "name": "알디바",
+          "bayer": "ζ Dra",
+          "ra": 17.1464,
+          "dec": 65.7147,
+          "mag": 3.17
+        },
+        {
+          "id": "dra-chi",
+          "name": null,
+          "bayer": "χ Dra",
+          "ra": 18.3509,
+          "dec": 72.7328,
+          "mag": 3.57
+        },
+        {
+          "id": "dra-delta",
+          "name": "알타이스",
+          "bayer": "δ Dra",
+          "ra": 19.2093,
+          "dec": 67.6614,
+          "mag": 3.07
+        },
+        {
+          "id": "dra-xi",
+          "name": "그루미움",
+          "bayer": "ξ Dra",
+          "ra": 17.8921,
+          "dec": 56.8728,
+          "mag": 3.75
+        },
+        {
+          "id": "dra-nu",
+          "name": null,
+          "bayer": "ν Dra",
+          "ra": 17.5363,
+          "dec": 55.1731,
+          "mag": 4.88
+        },
+        {
+          "id": "dra-beta",
+          "name": "라스타반",
+          "bayer": "β Dra",
+          "ra": 17.5072,
+          "dec": 52.3014,
+          "mag": 2.79
+        },
+        {
+          "id": "dra-gamma",
+          "name": "엘타닌",
+          "bayer": "γ Dra",
+          "ra": 17.9434,
+          "dec": 51.4889,
+          "mag": 2.23
+        }
+      ],
+      "lines": [
+        [
+          "dra-lambda",
+          "dra-kappa"
+        ],
+        [
+          "dra-kappa",
+          "dra-alpha"
+        ],
+        [
+          "dra-alpha",
+          "dra-iota"
+        ],
+        [
+          "dra-iota",
+          "dra-theta"
+        ],
+        [
+          "dra-theta",
+          "dra-eta"
+        ],
+        [
+          "dra-eta",
+          "dra-zeta"
+        ],
+        [
+          "dra-zeta",
+          "dra-chi"
+        ],
+        [
+          "dra-chi",
+          "dra-delta"
+        ],
+        [
+          "dra-delta",
+          "dra-xi"
+        ],
+        [
+          "dra-xi",
+          "dra-nu"
+        ],
+        [
+          "dra-nu",
+          "dra-beta"
+        ],
+        [
+          "dra-beta",
+          "dra-gamma"
+        ],
+        [
+          "dra-gamma",
+          "dra-xi"
+        ]
+      ],
+      "story": {
+        "title": "황금 사과를 지킨 용",
+        "slides": [
+          {
+            "text": "세상의 서쪽 끝에는 황금 사과가 열리는 나무가 있었어요.\n무엇과도 바꿀 수 없는 귀한 나무였지요.",
+            "art": "art/draco-1.png"
+          },
+          {
+            "text": "그 나무를 지키던 것은 라돈이라는 커다란 용이었어요.\n밤에도 눈을 감지 않고 나무를 감싸고 있었답니다.",
+            "art": "art/draco-2.png"
+          },
+          {
+            "text": "어느 날 힘센 영웅 헤라클레스가\n황금 사과를 얻으러 그곳을 찾아왔어요.",
+            "art": "art/draco-3.png"
+          },
+          {
+            "text": "헤라클레스는 사과를 가지고 떠났지만,\n헤라는 끝까지 나무를 지킨 라돈을 잊지 않았어요.",
+            "art": "art/draco-4.png"
+          },
+          {
+            "text": "그래서 라돈을 하늘에 올려 주었어요.\n지금도 큰곰과 작은곰 사이를 길게 휘감고 있답니다.",
+            "art": "art/draco-5.png"
+          },
+          {
+            "text": "이것이 밤하늘의 용자리예요.\n큰곰과 작은곰 사이를 길게 따라가 보세요.",
+            "art": "art/draco-6.png",
+            "overlay": [
+              "draco"
+            ],
+            "isSkyCut": true
+          }
+        ]
+      },
+      "art": {
+        "silhouette": null
+      },
+      "card": {
+        "epithet": "황금 사과를 지키는",
+        "power": "큰곰과 작은곰 사이를 길게 휘감아 북쪽 하늘을 지킨다."
+      }
+    }
+  ]
+}

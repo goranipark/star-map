@@ -1,0 +1,46 @@
+/* ------------------------------------------------------------------
+   폰트 정의 — design.md 3장(타이포그래피)
+   폰트 파일은 public/fonts/ 에 함께 배포되므로 인터넷이 끊긴 교실에서도
+   항상 같은 모양으로 표시된다.
+
+   라이선스
+   - 배달의민족 도현체 : 무료 상업적 이용 가능(출처 표기), (주)우아한형제들
+   - Pretendard        : SIL Open Font License 1.1
+   - Baloo 2           : SIL Open Font License 1.1
+   - JetBrains Mono    : SIL Open Font License 1.1
+------------------------------------------------------------------ */
+
+@font-face {
+  font-family: 'BMDoHyeon';
+  src: url('/fonts/BMDoHyeon.woff') format('woff');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  src: url('/fonts/PretendardVariable.woff2') format('woff2-variations');
+  font-weight: 45 920;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Baloo 2';
+  src: url('/fonts/Baloo2-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Baloo 2';
+  src: url('/fonts/Baloo2-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}

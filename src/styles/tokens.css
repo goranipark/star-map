@@ -1,0 +1,77 @@
+/* ------------------------------------------------------------------
+   디자인 토큰 — design.md 2·3·4장을 그대로 CSS 변수로 옮긴 것.
+   색/폰트/여백을 바꾸고 싶으면 다른 파일을 건드리지 말고 이 파일만 수정한다.
+------------------------------------------------------------------ */
+
+:root {
+  /* ---------- 2-2. 색상 ---------- */
+  --bg-sky: #0b0c1f;
+  --bg-field: #1c2038;
+  --bg-nebula: radial-gradient(
+    circle at 50% 40%,
+    rgba(60, 50, 120, 0.35),
+    transparent 70%
+  );
+
+  --gold: #e8c158;
+  --gold-soft: rgba(232, 193, 88, 0.15);
+
+  --star-white: #f5f7ff;
+  --line-cyan: #7fd8e8;
+
+  --text-primary: #e4e7f0;
+  --text-muted: rgba(228, 231, 240, 0.6);
+
+  --hairline: rgba(228, 231, 240, 0.16);
+  --hairline-strong: rgba(228, 231, 240, 0.3);
+
+  --wrong-red: #e06666;
+
+  /* ---------- 3. 타이포그래피 ---------- */
+  --font-display: 'BMDoHyeon', 'Baloo 2', 'Pretendard', system-ui, sans-serif;
+  --font-body: 'Pretendard', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Pretendard', ui-monospace, monospace;
+
+  --size-display: 36px;
+  --size-heading: 24px;
+  --size-body: 17px;
+  --size-mono: 13px;
+  --size-eyebrow: 12px;
+
+  /* ---------- 4. 여백 (4px 스케일) ---------- */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+
+  /* ---------- 모서리 ---------- */
+  --radius-card: 12px;
+  --radius-button: 10px;
+  --radius-round: 9999px;
+
+  /* ---------- 터치 타깃 최소 크기 (design.md 4장) ---------- */
+  --touch-min: 44px;
+
+  /* ---------- 발광(글로우) — 그림자는 쓰지 않는다 ---------- */
+  --glow-gold: 0 0 12px rgba(232, 193, 88, 0.45);
+  --glow-gold-strong: 0 0 24px rgba(232, 193, 88, 0.7);
+  --glow-star: 0 0 8px rgba(245, 247, 255, 0.55);
+
+  /* ---------- 모션 (design.md 6장) ---------- */
+  --dur-line-draw: 300ms;
+  --dur-wrong-fade: 400ms;
+  --dur-twinkle: 3s;
+  --dur-screen: 450ms;
+  --ease-soft: cubic-bezier(0.33, 0.9, 0.28, 1);
+}
+
+/* 화면이 좁은 태블릿/세로 모드에서는 글자 크기를 한 단계 줄인다 */
+@media (max-width: 720px) {
+  :root {
+    --size-display: 28px;
+    --size-heading: 20px;
+    --size-body: 16px;
+  }
+}

@@ -1,0 +1,125 @@
+/* 수업용 화면을 밀어내지 않도록 오른쪽에 따로 띄운다 (개발용 도구) */
+.panel {
+  position: fixed;
+  top: 72px;
+  right: var(--space-md);
+  z-index: 10;
+  width: 260px;
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: rgba(11, 12, 31, 0.9);
+  border: 1px dashed var(--gold);
+  border-radius: var(--radius-card);
+}
+
+.note {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+/* ---------------- 별자리 고르기 ---------------- */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.tab {
+  padding: var(--space-xs) var(--space-sm);
+  min-height: 0;
+  font-size: 12px;
+  border-radius: var(--radius-button);
+  border: 1px solid var(--hairline);
+  color: var(--text-muted);
+}
+
+.tabOn {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* ---------------- 조절 막대 ---------------- */
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 12px;
+}
+
+.rowLabel {
+  flex: 0 0 42px;
+  color: var(--text-muted);
+}
+
+.row input {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--gold);
+}
+
+.rowValue {
+  flex: 0 0 48px;
+  text-align: right;
+  color: var(--gold);
+  font-size: 11px;
+}
+
+/* ---------------- 결과 ---------------- */
+.actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.smallBtn {
+  padding: var(--space-xs) var(--space-sm);
+  min-height: 0;
+  font-size: 12px;
+  border-radius: var(--radius-button);
+  border: 1px solid var(--hairline);
+  color: var(--text-muted);
+}
+
+.smallBtn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.label {
+  margin-top: var(--space-xs);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.code {
+  display: block;
+  max-height: 90px;
+  overflow-y: auto;
+  padding: var(--space-sm);
+  border-radius: var(--radius-button);
+  background: rgba(28, 32, 56, 0.8);
+  border: 1px solid var(--hairline);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+@media (max-width: 860px) {
+  .panel {
+    position: static;
+    width: 100%;
+    max-height: none;
+  }
+}
+
+.refRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}

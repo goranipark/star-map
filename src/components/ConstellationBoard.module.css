@@ -1,0 +1,245 @@
+.board {
+  width: min(100%, 92vmin);
+  max-height: 100%;
+  aspect-ratio: 1;
+  /* 손가락으로 별을 끌 때 화면이 같이 스크롤되지 않도록 */
+  touch-action: none;
+}
+
+.sky {
+  transition: transform 1200ms var(--ease-soft);
+  transform-origin: 0 0;
+}
+
+.fluidBoard {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  aspect-ratio: auto;
+  overflow: hidden;
+}
+
+.viewControls {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  gap: 4px;
+  /* 버튼 영역은 카메라 계산에서 제외한다. */
+  transform: translateY(calc(-100% - 8px));
+}
+
+.viewControls button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-button);
+  background: var(--bg-field);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.viewControls button:nth-child(-n + 2) {
+  font-size: 22px;
+}
+
+.viewControls button[aria-pressed='true'] {
+  color: var(--gold);
+  border-color: var(--gold);
+  background: var(--gold-soft);
+}
+
+.viewControls button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ---------------- 성도판 ---------------- */
+.skyEdge {
+  fill: none;
+  stroke: var(--hairline);
+}
+
+.skyGuide {
+  fill: none;
+  stroke: var(--hairline);
+  stroke-dasharray: 1 1.8;
+}
+
+/* ---------------- 별 ---------------- */
+.bgStar,
+.star,
+.polaris,
+.selectRing {
+  transition: r 1200ms var(--ease-soft);
+}
+
+.bgStar {
+  fill: var(--star-white);
+  opacity: 0.55;
+  animation: twinkle var(--dur-twinkle) ease-in-out infinite;
+}
+
+.star {
+  fill: var(--star-white);
+  animation: twinkle var(--dur-twinkle) ease-in-out infinite;
+}
+
+.polaris {
+  fill: var(--gold);
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* 고른 별에 두르는 골드 링 */
+.selectRing {
+  fill: none;
+  stroke: var(--gold);
+  animation: selectPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes selectPulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ---------------- 선 ---------------- */
+.drawnLine {
+  stroke: var(--line-cyan);
+  stroke-linecap: round;
+  animation: drawIn var(--dur-line-draw) var(--ease-soft) both;
+}
+
+@keyframes drawIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.wrongLine {
+  stroke: var(--wrong-red);
+  stroke-linecap: round;
+  animation: wrongFade var(--dur-wrong-fade) ease-out forwards;
+}
+
+@keyframes wrongFade {
+  0% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.dragLine {
+  stroke: var(--gold);
+  stroke-linecap: round;
+  opacity: 0.8;
+}
+
+/* 이미 완성한 별자리 */
+.doneLine {
+  stroke: var(--gold);
+  stroke-linecap: round;
+  opacity: 0.28;
+}
+
+/* 도움말로 잠깐 보여주는 정답 모양 */
+.hintLine {
+  stroke: var(--text-primary);
+  stroke-linecap: round;
+  opacity: 0.35;
+}
+
+/* ---------------- 완성 연출 ---------------- */
+.completionSpark {
+  --spark-lead: 0;
+  stroke-linecap: round;
+  animation: travelLight linear both;
+}
+
+.sparkTrail {
+  stroke: #f5cf79;
+  stroke-dasharray: 0.14 1.1;
+  stroke-opacity: 0.55;
+}
+
+.sparkHead {
+  --spark-lead: 0.115;
+  stroke: #fffdf1;
+  stroke-dasharray: 0.025 1.215;
+}
+
+@keyframes travelLight {
+  0% { stroke-dashoffset: calc(0.15 - var(--spark-lead)); opacity: 0; }
+  12% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { stroke-dashoffset: calc(-1 - var(--spark-lead)); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .completionSpark {
+    display: none;
+  }
+}
+
+/* design.md 6장: 전체 선이 골드로 동시에 밝아지는 pulse */
+.sky[data-celebrating] .drawnLine {
+  stroke: var(--gold);
+  animation: completePulse 900ms var(--ease-soft) 2;
+}
+
+.sky[data-celebrating] .memberStar {
+  fill: var(--gold);
+  animation: none;
+}
+
+@keyframes completePulse {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.doneName {
+  fill: var(--gold);
+  font-family: var(--font-display);
+  text-anchor: middle;
+  animation: nameIn 700ms var(--ease-soft) both;
+  paint-order: stroke;
+  stroke: var(--bg-sky);
+  stroke-width: 1.2;
+}
+
+@keyframes nameIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

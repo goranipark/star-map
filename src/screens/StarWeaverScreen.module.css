@@ -1,0 +1,231 @@
+.wrap {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: var(--space-lg);
+  padding: var(--space-md) var(--space-lg) var(--space-lg);
+  align-items: stretch;
+}
+
+/* ---------------- 왼쪽: 밤하늘 / 카드 ---------------- */
+.boardArea,
+.cardArea {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+
+.cardArea > * {
+  width: min(100%, 360px);
+}
+
+/* ---------------- 오른쪽 안내 패널 ---------------- */
+.panel {
+  flex: 0 0 330px;
+  align-self: center;
+  max-height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  align-items: flex-start;
+  padding: var(--space-lg);
+  background: var(--bg-field);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+}
+
+.heading {
+  font-size: var(--size-heading);
+  color: var(--gold);
+}
+
+.guide {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+.hint {
+  width: 100%;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-button);
+  background: var(--gold-soft);
+  border: 1px solid var(--hairline);
+}
+
+/* ---------------- 선 개수 ---------------- */
+.counter {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+.count {
+  font-size: 26px;
+  color: var(--gold);
+}
+
+.countLabel {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.countTiny {
+  align-self: flex-end;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ---------------- 입력 ---------------- */
+.field {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.fieldLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.input {
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--text-primary);
+  background: rgba(11, 12, 31, 0.6);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-button);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+.input::placeholder {
+  color: rgba(228, 231, 240, 0.35);
+}
+
+/* ---------------- 칭호 고르기 ---------------- */
+.pickBtn {
+  min-height: 0;
+  padding: 2px var(--space-sm);
+  font-size: 11px;
+  border-radius: var(--radius-round);
+  border: 1px solid var(--hairline);
+  color: var(--text-muted);
+}
+
+.pickBtn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.epithets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  max-height: 210px;
+  overflow-y: auto;
+  padding: var(--space-sm);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-button);
+  background: rgba(11, 12, 31, 0.45);
+}
+
+.epithetGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.groupLabel {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.chip {
+  min-height: 0;
+  padding: var(--space-xs) var(--space-sm);
+  font-size: 12px;
+  border-radius: var(--radius-round);
+  border: 1px solid var(--hairline);
+  color: var(--text-primary);
+  transition: border-color 160ms var(--ease-soft), color 160ms var(--ease-soft);
+}
+
+.chip:hover {
+  border-color: var(--hairline-strong);
+}
+
+.chipOn {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: var(--gold-soft);
+}
+
+/* ---------------- 버튼 ---------------- */
+.actions {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.actions button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.exitLink {
+  min-height: 0;
+  padding: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.exitLink:hover {
+  color: var(--gold);
+}
+
+/* ---------------- 태블릿 세로 ---------------- */
+@media (max-width: 900px) {
+  .wrap {
+    flex-direction: column;
+    overflow-y: auto;
+    padding: var(--space-sm) var(--space-md) var(--space-md);
+  }
+
+  .panel {
+    flex: 0 0 auto;
+    width: 100%;
+    align-self: stretch;
+    max-height: none;
+  }
+}

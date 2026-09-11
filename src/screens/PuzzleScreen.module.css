@@ -175,11 +175,11 @@
   .panel > button { padding: 8px; font-size: 13px; }
 }
 
-@media (max-height: 500px) and (min-width: 600px) {
+@media (max-height: 500px) and (orientation: landscape) {
   .wrap { flex-direction: row; }
   .panel {
-    width: 220px;
-    flex: 0 0 220px;
+    width: clamp(160px, 26vw, 220px);
+    flex: 0 0 clamp(160px, 26vw, 220px);
     align-self: center;
     display: flex;
     gap: 8px;

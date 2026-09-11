@@ -53,3 +53,9 @@
     font-size: 11px;
   }
 }
+
+@media (max-width: 360px) {
+  .bar { gap: 8px; padding-inline: 8px; }
+  .title { font-size: 18px; }
+  .progress { font-size: 10px; }
+}

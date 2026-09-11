@@ -147,10 +147,12 @@ export default function ConstellationBoard({
    * 화면에 보이는 크기를 일정하게 유지한다.
    * 그래야 "별이 클수록 밝은 별"이라는 규칙이 스테이지마다 흔들리지 않는다.
    */
-  const starScale = (r) => r / scale;
-  const lineWidth = (w) => w / scale;
+  // 가로 화면의 넓은 SVG 폭 때문에 별빛까지 커져 서로 뭉치지 않도록 한다.
+  const visualUnit = fitViewport ? Math.min(viewport.width, viewport.height, 500) / viewport.width : 1;
+  const starScale = (r) => r * visualUnit / scale;
+  const lineWidth = (w) => w * visualUnit / scale;
   /** 발광 반경도 같은 이유로 배율 보정한다. 안 하면 확대할수록 별이 뭉개진다. */
-  const glow = (radius, color) => `drop-shadow(0 0 ${(radius / scale).toFixed(3)}px ${color})`;
+  const glow = (radius, color) => `drop-shadow(0 0 ${(radius * visualUnit / scale).toFixed(3)}px ${color})`;
 
   /* ---------------------------------------------------------------
      스테이지가 바뀌면 판을 새로 깐다.

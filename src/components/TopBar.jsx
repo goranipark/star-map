@@ -5,11 +5,18 @@ import { TOTAL_STAGES } from '../game/constellations.js';
  * 상단 진행 표시 바 — design.md 5장(pill 네비게이션) / 6장.
  * "초등 대상은 진행 상황을 계속 보여주는 것이 안심 요소"이므로 항상 고정 노출한다.
  */
-export default function TopBar({ title, completedCount = 0, onBack, onOpenAlmanac }) {
+export default function TopBar({
+  title,
+  completedCount = 0,
+  soundOn = true,
+  onBack,
+  onOpenAlmanac,
+  onToggleSound,
+}) {
   return (
     <header className={styles.bar}>
       {onBack ? (
-        <button className={styles.iconBtn} onClick={onBack} aria-label="뒤로 가기">
+        <button type="button" className={styles.iconBtn} onClick={onBack} aria-label="뒤로 가기">
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
             <path
               d="M15 5 8 12l7 7"
@@ -27,12 +34,31 @@ export default function TopBar({ title, completedCount = 0, onBack, onOpenAlmana
 
       <span className={styles.title}>{title}</span>
 
-      <span className={`mono ${styles.progress}`}>
+      <span className={`mono ${styles.progress} ${styles.progressFull}`}>
         {completedCount}/{TOTAL_STAGES} 별자리 완성
       </span>
+      <span
+        className={`mono ${styles.progress} ${styles.progressShort}`}
+        aria-label={`${completedCount}/${TOTAL_STAGES} 별자리 완성`}
+      >
+        {completedCount}/{TOTAL_STAGES}
+      </span>
+
+      {onToggleSound && (
+        <button
+          type="button"
+          className={styles.iconBtn}
+          onClick={onToggleSound}
+          aria-label={soundOn ? '소리 끄기' : '소리 켜기'}
+          aria-pressed={soundOn}
+          title={soundOn ? '소리 끄기' : '소리 켜기'}
+        >
+          <span aria-hidden="true">{soundOn ? '♪' : '×'}</span>
+        </button>
+      )}
 
       {onOpenAlmanac ? (
-        <button className={styles.iconBtn} onClick={onOpenAlmanac} aria-label="도감 열기">
+        <button type="button" className={styles.iconBtn} onClick={onOpenAlmanac} aria-label="도감 열기">
           <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
             <circle
               cx="12"

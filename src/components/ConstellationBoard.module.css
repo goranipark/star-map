@@ -140,6 +140,7 @@
 .wrongLine {
   stroke: var(--wrong-red);
   stroke-linecap: round;
+  stroke-dasharray: 1.2 0.8;
   animation: wrongFade var(--dur-wrong-fade) ease-out forwards;
 }
 

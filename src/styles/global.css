@@ -64,6 +64,16 @@ button {
   min-height: var(--touch-min);
 }
 
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+button:disabled {
+  cursor: default;
+}
+
 /* 키보드 사용자를 위한 포커스 링 (골드 글로우) */
 :focus-visible {
   outline: 2px solid var(--gold);
@@ -88,6 +98,19 @@ button {
 .mono {
   font-family: var(--font-mono);
   font-size: var(--size-mono);
+}
+
+/* 화면에는 보이지 않지만 보조 기술에는 읽히는 안내 */
+.srOnly {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }
 
 /* 헤어라인 카드 — 그림자 없이 1px 테두리만 */
@@ -130,6 +153,9 @@ button {
 
 /* 움직임을 줄이도록 설정한 기기에서는 애니메이션을 최소화한다 */
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   *,
   *::before,
   *::after {

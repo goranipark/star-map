@@ -146,6 +146,7 @@ export default function AlmanacScreen({
                 <div key={c.id} className={styles.mineItem}>
                   <ConstellationCard constellation={c} compact />
                   <button
+                    type="button"
                     className={styles.removeLink}
                     onClick={() => onRemoveMyConstellation?.(c.id)}
                     aria-label={`${c.name} 지우기`}
@@ -155,7 +156,7 @@ export default function AlmanacScreen({
                 </div>
               ))}
 
-              <button className={`btnPrimary ${styles.weaveBtn}`} onClick={onStartWeaving}>
+              <button type="button" className={`btnPrimary ${styles.weaveBtn}`} onClick={onStartWeaving}>
                 {myConstellations.length ? '성좌 하나 더 만들기' : '나만의 성좌 만들기'}
               </button>
             </>
@@ -163,7 +164,7 @@ export default function AlmanacScreen({
         </section>
 
         <div className={styles.footer}>
-          <button className="btnGhost" onClick={onBackToTitle}>
+          <button type="button" className="btnGhost" onClick={onBackToTitle}>
             처음 화면으로
           </button>
 
@@ -171,6 +172,7 @@ export default function AlmanacScreen({
             <span className={styles.confirm}>
               <span className={styles.confirmText}>정말 지울까요?</span>
               <button
+                type="button"
                 className={styles.danger}
                 onClick={() => {
                   onReset?.();
@@ -179,12 +181,12 @@ export default function AlmanacScreen({
               >
                 네, 지웁니다
               </button>
-              <button className="btnGhost" onClick={() => setConfirmingReset(false)}>
+              <button type="button" className="btnGhost" onClick={() => setConfirmingReset(false)}>
                 취소
               </button>
             </span>
           ) : (
-            <button className={styles.resetLink} onClick={() => setConfirmingReset(true)}>
+            <button type="button" className={styles.resetLink} onClick={() => setConfirmingReset(true)}>
               진행 기록 지우기
             </button>
           )}

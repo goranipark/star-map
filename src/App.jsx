@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import styles from './App.module.css';
 
 import { SCREEN } from './game/screens.js';
@@ -8,6 +8,12 @@ import {
   nextConstellation,
 } from './game/constellations.js';
 import { useProgress } from './game/useProgress.js';
+import {
+  disposeAudio,
+  playFeedback,
+  setAudioEnabled,
+  unlockAudio,
+} from './game/audio.js';
 
 import BackgroundStars from './components/BackgroundStars.jsx';
 import TopBar from './components/TopBar.jsx';
@@ -16,6 +22,11 @@ import PuzzleScreen from './screens/PuzzleScreen.jsx';
 import StoryScreen from './screens/StoryScreen.jsx';
 import AlmanacScreen from './screens/AlmanacScreen.jsx';
 import StarWeaverScreen from './screens/StarWeaverScreen.jsx';
+import UpdateBanner from './components/UpdateBanner.jsx';
+import {
+  activateWaitingWorker,
+  registerServiceWorker,
+} from './game/serviceWorker.js';
 
 /** 화면별 상단 바 제목. TITLE 화면은 상단 바를 쓰지 않는다. */
 const SCREEN_TITLE = {
@@ -33,6 +44,7 @@ export default function App() {
     starWeavingUnlocked,
     complete,
     setLastPlayed,
+    setSettings,
     reset,
     saveMyConstellation,
     removeMyConstellation,
@@ -44,6 +56,26 @@ export default function App() {
   );
   /** 도감에서 "다시 보기"로 들어온 경우 — 완성 축하 문구를 띄우지 않는다. */
   const [replaying, setReplaying] = useState(false);
+  const [updateRegistration, setUpdateRegistration] = useState(null);
+  const soundOn = progress.settings?.sound !== false;
+
+  useEffect(() => setAudioEnabled(soundOn), [soundOn]);
+
+  useEffect(() => {
+    const unlock = () => unlockAudio();
+    window.addEventListener('pointerdown', unlock, { once: true, capture: true });
+    window.addEventListener('keydown', unlock, { once: true, capture: true });
+    return () => {
+      window.removeEventListener('pointerdown', unlock, { capture: true });
+      window.removeEventListener('keydown', unlock, { capture: true });
+      disposeAudio();
+    };
+  }, []);
+
+  useEffect(
+    () => registerServiceWorker({ onUpdate: setUpdateRegistration }),
+    []
+  );
 
   const current = getConstellation(currentId) ?? constellations[0];
 
@@ -103,6 +135,13 @@ export default function App() {
         <TopBar
           title={SCREEN_TITLE[screen]}
           completedCount={completedIds.length}
+          soundOn={soundOn}
+          onToggleSound={() => {
+            const next = !soundOn;
+            setSettings({ sound: next });
+            setAudioEnabled(next);
+            if (next) unlockAudio();
+          }}
           onBack={() =>
             go(
               (replaying && screen === SCREEN.STORY) || screen === SCREEN.STAR_WEAVER
@@ -131,6 +170,7 @@ export default function App() {
             constellation={current}
             completedConstellations={completedConstellations}
             onClear={handleStageClear}
+            onFeedback={playFeedback}
           />
         )}
 
@@ -161,9 +201,17 @@ export default function App() {
           <StarWeaverScreen
             onSave={saveMyConstellation}
             onExit={() => go(SCREEN.ALMANAC)}
+            onFeedback={playFeedback}
           />
         )}
       </main>
+
+      {updateRegistration && (
+        <UpdateBanner
+          onUpdate={() => activateWaitingWorker(updateRegistration)}
+          onDismiss={() => setUpdateRegistration(null)}
+        />
+      )}
     </div>
   );
 }

@@ -10,6 +10,7 @@ export default function PuzzleScreen({
   constellation,
   completedConstellations = [],
   onClear,
+  onFeedback,
 }) {
   const [progress, setProgress] = useState({ drawn: 0, total: 0 });
   const [showHint, setShowHint] = useState(false);
@@ -35,6 +36,7 @@ export default function PuzzleScreen({
           showAnswer={showHint}
           onComplete={onClear}
           onProgress={handleProgress}
+          onFeedback={onFeedback}
         />
       </div>
 
@@ -70,7 +72,7 @@ export default function PuzzleScreen({
         {showHint ? (
           <p className={styles.hint}>{constellation.hint}</p>
         ) : (
-          <button className="btnGhost" onClick={() => setShowHint(true)}>
+          <button type="button" className="btnGhost" onClick={() => setShowHint(true)}>
             도움말 보기
           </button>
         )}

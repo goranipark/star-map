@@ -1,0 +1,21 @@
+{
+  "name": "폴라리스의 별자리",
+  "short_name": "폴라리스 별자리",
+  "description": "북극성 주변의 별자리를 이어 보는 초등 과학 학습 게임",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0B0C1F",
+  "theme_color": "#0B0C1F",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
+

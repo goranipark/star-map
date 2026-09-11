@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="폴라리스 별자리">
+  <defs>
+    <radialGradient id="sky" cx="50%" cy="42%" r="68%">
+      <stop offset="0" stop-color="#30285f"/>
+      <stop offset="1" stop-color="#0b0c1f"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="104" fill="url(#sky)"/>
+  <circle cx="256" cy="256" r="172" fill="none" stroke="#e4e7f0" stroke-opacity=".2" stroke-width="4"/>
+  <circle cx="256" cy="256" r="112" fill="none" stroke="#e4e7f0" stroke-opacity=".14" stroke-width="3" stroke-dasharray="7 11"/>
+  <path d="M256 112 274 236 400 256 274 276 256 400 238 276 112 256 238 236Z" fill="#e8c158"/>
+  <circle cx="256" cy="256" r="18" fill="#fffdf4"/>
+</svg>
+

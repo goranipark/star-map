@@ -170,8 +170,16 @@
 
   .list {
     flex: 0 0 auto;
+    width: 100%;
     overflow: visible;
   }
+}
+
+@media (max-width: 420px) {
+  .wrap { padding: var(--space-sm); }
+  .map { width: min(100%, 78vw); }
+  .footer { gap: var(--space-sm); }
+  .confirm { align-items: stretch; }
 }
 
 /* ---------------- 나만의 성좌 (Phase 4-B) ---------------- */

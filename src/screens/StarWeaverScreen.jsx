@@ -26,7 +26,7 @@ const AUTHOR_MAX = 10;
  * 세 걸음으로 나눠 한 화면에 하나씩만 시킨다.
  *   1) 별 잇기  2) 카드 채우기  3) 완성
  */
-export default function StarWeaverScreen({ onSave, onExit }) {
+export default function StarWeaverScreen({ onSave, onExit, onFeedback }) {
   const [step, setStep] = useState(1);
   const [lines, setLines] = useState([]);
   const [clearToken, setClearToken] = useState(0);
@@ -100,6 +100,7 @@ export default function StarWeaverScreen({ onSave, onExit }) {
               mode="free"
               onLinesChange={handleLines}
               clearToken={clearToken}
+              onFeedback={onFeedback}
             />
           </div>
 
@@ -123,6 +124,7 @@ export default function StarWeaverScreen({ onSave, onExit }) {
 
             <div className={styles.actions}>
               <button
+                type="button"
                 className="btnGhost"
                 onClick={clearAll}
                 disabled={lines.length === 0}
@@ -130,6 +132,7 @@ export default function StarWeaverScreen({ onSave, onExit }) {
                 전체 지우기
               </button>
               <button
+                type="button"
                 className="btnPrimary"
                 onClick={() => setStep(2)}
                 disabled={!enoughLines}
@@ -138,7 +141,7 @@ export default function StarWeaverScreen({ onSave, onExit }) {
               </button>
             </div>
 
-            <button className={styles.exitLink} onClick={onExit}>
+            <button type="button" className={styles.exitLink} onClick={onExit}>
               그만두고 도감으로
             </button>
           </aside>
@@ -159,7 +162,7 @@ export default function StarWeaverScreen({ onSave, onExit }) {
             <div className={styles.field}>
               <span className={styles.fieldLabel}>
                 칭호 — 어떤 성좌인가요?
-                <button className={styles.pickBtn} onClick={() => setEpithet(randomEpithet())}>
+                <button type="button" className={styles.pickBtn} onClick={() => setEpithet(randomEpithet())}>
                   골라 줘
                 </button>
               </span>
@@ -170,6 +173,7 @@ export default function StarWeaverScreen({ onSave, onExit }) {
                     <div className={styles.chips}>
                       {group.items.map((item) => (
                         <button
+                          type="button"
                           key={item}
                           className={`${styles.chip} ${epithet === item ? styles.chipOn : ''}`}
                           onClick={() => setEpithet(item)}
@@ -222,10 +226,10 @@ export default function StarWeaverScreen({ onSave, onExit }) {
             </label>
 
             <div className={styles.actions}>
-              <button className="btnGhost" onClick={() => setStep(1)}>
+              <button type="button" className="btnGhost" onClick={() => setStep(1)}>
                 별 다시 잇기
               </button>
-              <button className="btnPrimary" onClick={handleSave} disabled={!cardReady}>
+              <button type="button" className="btnPrimary" onClick={handleSave} disabled={!cardReady}>
                 성좌 완성하기
               </button>
             </div>
@@ -255,10 +259,10 @@ export default function StarWeaverScreen({ onSave, onExit }) {
             )}
 
             <div className={styles.actions}>
-              <button className="btnPrimary" onClick={handleDownload}>
+              <button type="button" className="btnPrimary" onClick={handleDownload}>
                 그림으로 저장하기
               </button>
-              <button className="btnGhost" onClick={onExit}>
+              <button type="button" className="btnGhost" onClick={onExit}>
                 도감 보기
               </button>
             </div>

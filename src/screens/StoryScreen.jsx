@@ -28,7 +28,7 @@ export default function StoryScreen({
       />
 
       {!replay && nextConstellation && (
-        <button className={`btnGhost ${styles.next}`} onClick={onNextStage}>
+        <button type="button" className={`btnGhost ${styles.next}`} onClick={onNextStage}>
           바로 다음 별자리 도전 · {nextConstellation.name}
         </button>
       )}

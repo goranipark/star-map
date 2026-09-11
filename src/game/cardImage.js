@@ -210,7 +210,7 @@ export function drawCard(canvas, constellation) {
 }
 
 /** 파일 이름으로 쓸 수 없는 글자를 걸러낸다. */
-function safeFileName(name) {
+export function safeFileName(name) {
   return (
     String(name || '나의성좌')
       .replace(/[\\/:*?"<>|]/g, '')

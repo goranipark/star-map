@@ -1,4 +1,4 @@
-import data from '../data/constellations.json';
+import data from '../data/constellations.json' with { type: 'json' };
 
 /**
  * 별자리 데이터 접근 창구.

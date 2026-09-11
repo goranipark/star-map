@@ -34,10 +34,10 @@ export default function TitleScreen({ onStart, onOpenAlmanac, completedCount = 0
       )}
 
       <div className={styles.actions}>
-        <button className="btnPrimary" onClick={onStart}>
+        <button type="button" className="btnPrimary" onClick={onStart}>
           {inProgress ? '이어서 별 잇기' : '별 이어 보기'}
         </button>
-        <button className="btnGhost" onClick={onOpenAlmanac}>
+        <button type="button" className="btnGhost" onClick={onOpenAlmanac}>
           나의 밤하늘 도감
         </button>
       </div>

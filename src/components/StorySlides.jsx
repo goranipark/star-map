@@ -74,7 +74,7 @@ export default function StorySlides({ constellation, onFinish, finishLabel = '�
           </div>
         </article>
         <div className={styles.controls}>
-          <button className="btnPrimary" onClick={onFinish}>
+          <button type="button" className="btnPrimary" onClick={onFinish}>
             {finishLabel}
           </button>
         </div>
@@ -132,6 +132,7 @@ export default function StorySlides({ constellation, onFinish, finishLabel = '�
       <div className={styles.dots} role="group" aria-label="이야기 컷">
         {slides.map((_, i) => (
           <button
+            type="button"
             key={i}
             className={`${styles.dot} ${i === index ? styles.dotActive : ''}`}
             aria-label={`${i + 1}번째 컷`}
@@ -143,6 +144,7 @@ export default function StorySlides({ constellation, onFinish, finishLabel = '�
 
       <div className={styles.controls}>
         <button
+          type="button"
           className="btnGhost"
           onClick={() => setIndex((i) => Math.max(0, i - 1))}
           disabled={index === 0}
@@ -151,11 +153,11 @@ export default function StorySlides({ constellation, onFinish, finishLabel = '�
         </button>
 
         {isLast ? (
-          <button className="btnPrimary" onClick={onFinish}>
+          <button type="button" className="btnPrimary" onClick={onFinish}>
             {finishLabel}
           </button>
         ) : (
-          <button className="btnPrimary" onClick={() => setIndex((i) => i + 1)}>
+          <button type="button" className="btnPrimary" onClick={() => setIndex((i) => i + 1)}>
             다음 이야기 보기
           </button>
         )}

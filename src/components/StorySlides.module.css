@@ -194,3 +194,29 @@
     font-size: 18px;
   }
 }
+
+@media (max-width: 420px) {
+  .slide {
+    padding: var(--space-md);
+    gap: var(--space-md);
+  }
+
+  .figureBox {
+    width: min(100%, 42vh);
+  }
+
+  .text {
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  .controls {
+    width: 100%;
+    gap: var(--space-sm);
+  }
+
+  .controls button {
+    flex: 1 1 auto;
+    padding-inline: var(--space-md);
+  }
+}

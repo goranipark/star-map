@@ -96,6 +96,7 @@ export default function OverlayTuner({ slideKey, overlay, onChange }) {
         <div className={styles.tabs}>
           {values.map((v, i) => (
             <button
+              type="button"
               key={v.id}
               className={`${styles.tab} ${i === active ? styles.tabOn : ''}`}
               onClick={() => setActive(i)}
@@ -141,14 +142,14 @@ export default function OverlayTuner({ slideKey, overlay, onChange }) {
       />
 
       <div className={styles.actions}>
-        <button className={styles.smallBtn} onClick={reset}>
+        <button type="button" className={styles.smallBtn} onClick={reset}>
           이 별자리 초기화
         </button>
       </div>
 
       <p className={styles.label}>constellations.json 의 overlay 값</p>
       <code className={styles.code}>{json}</code>
-      <button className="btnPrimary" onClick={copy}>
+      <button type="button" className="btnPrimary" onClick={copy}>
         {copied ? '복사했습니다' : '복사하기'}
       </button>
 
@@ -157,6 +158,7 @@ export default function OverlayTuner({ slideKey, overlay, onChange }) {
       <div className={styles.refRow}>
         {values.map((v) => (
           <button
+            type="button"
             key={v.id}
             className={styles.smallBtn}
             onClick={() => downloadConstellationReference(getConstellation(v.id))}

@@ -229,3 +229,10 @@
     max-height: none;
   }
 }
+
+@media (max-width: 420px) {
+  .wrap { padding: var(--space-sm); gap: var(--space-sm); }
+  .panel { padding: var(--space-md); gap: var(--space-sm); }
+  .cardArea > * { width: min(100%, 320px); }
+  .actions > button { flex: 1 1 130px; }
+}

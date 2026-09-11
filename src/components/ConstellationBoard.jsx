@@ -41,6 +41,7 @@ export default function ConstellationBoard({
   showAnswer = false,
   onComplete,
   onProgress,
+  onFeedback,
   /** 자유 연결 모드에서 이은 선이 바뀔 때마다 알려 준다 — [[별id, 별id], ...] */
   onLinesChange,
   /** 값이 바뀌면 그은 선을 전부 지운다 ("전체 지우기" 버튼용) */
@@ -80,6 +81,9 @@ export default function ConstellationBoard({
   const [dragPos, setDragPos] = useState(null); // 고무줄 선을 그리기 위한 좌표
   const [celebrating, setCelebrating] = useState(false);
   const [zoomed, setZoomed] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const onFeedbackRef = useRef(onFeedback);
+  onFeedbackRef.current = onFeedback;
 
   const answers = useMemo(
     () => (mode === 'puzzle' ? answerLineSet(constellation) : new Set()),
@@ -166,6 +170,7 @@ export default function ConstellationBoard({
     setSelectedId(null);
     setDragPos(null);
     setCelebrating(false);
+    setFeedbackMessage('');
     setZoomed(false);
     setZoomLevel(1);
 
@@ -185,6 +190,8 @@ export default function ConstellationBoard({
     setCelebrating(true);
     selectedRef.current = null;
     setSelectedId(null);
+    setFeedbackMessage(`${constellation.name} 완성!`);
+    onFeedbackRef.current?.('complete');
   }, [drawn, answers, mode, celebrating]);
 
   // 축하 연출을 보여준 뒤 이야기 화면으로 넘긴다.
@@ -235,11 +242,15 @@ export default function ConstellationBoard({
         const next = new Map(drawnRef.current).set(key, [aId, bId]);
         drawnRef.current = next;
         setDrawn(next);
+        setFeedbackMessage(free ? '선을 이었어요.' : '맞는 연결이에요.');
+        onFeedbackRef.current?.('correct');
         return;
       }
 
-      // 오답 — 붉게 보여 주고 조용히 사라진다. 감점도 경고음도 없다.
+      // 오답 — 붉은 점선과 부드러운 효과음으로 알려 준 뒤 사라진다. 감점은 없다.
       const id = `${key}-${Date.now()}`;
+      setFeedbackMessage('다른 별을 이어 보세요.');
+      onFeedbackRef.current?.('wrong');
       setWrong((prev) => [...prev, { id, a: aId, b: bId }]);
       setTimeout(() => {
         setWrong((prev) => prev.filter((w) => w.id !== id));
@@ -569,6 +580,9 @@ export default function ConstellationBoard({
         <button type="button" aria-pressed={zoomed && zoomLevel === 1} disabled={celebrating} onClick={() => changeView(1)}>별자리 맞춤</button>
       </div>
     )}
+    <p className="srOnly" aria-live="polite" aria-atomic="true">
+      {feedbackMessage}
+    </p>
     </>
   );
 }

@@ -26,7 +26,7 @@ import { constellations, getConstellation } from './constellations.js';
  * }
  */
 
-const STORAGE_KEY = 'polaris-star-map/progress/v1';
+export const STORAGE_KEY = 'polaris-star-map/progress/v1';
 
 const EMPTY = Object.freeze({
   version: 1,

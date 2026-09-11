@@ -23,7 +23,7 @@ import {
  *
  * 그래서 **별자리는 앱이 그린다.** slide.overlay에 적힌 별자리를 실제 적경·적위로
  * 계산해 삽화 위에 겹쳐 그린다. 옛 성도가 신화 그림 위에 별자리를 얹던 방식과 같고,
- * 별 위치는 100% 정확하다.
+ * 별 위치는 데이터의 J2000 좌표를 투영한 것으로, 현재 관측 하늘과는 구분한다.
  */
 export default function StorySlides({ constellation, onFinish, finishLabel = '도감에 담기' }) {
   const slides = constellation.story?.slides ?? [];

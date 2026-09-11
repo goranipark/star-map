@@ -1,0 +1,21 @@
+import { pathToFileURL } from 'node:url';
+const { chromium } = await import(process.env.PLAYWRIGHT_MODULE ? pathToFileURL(process.env.PLAYWRIGHT_MODULE).href : 'playwright');
+const browser = await chromium.launch({headless:true,channel:'msedge'});
+const page = await browser.newPage({viewport:{width:1280,height:900},serviceWorkers:'block'});
+const errors=[]; page.on('pageerror',e=>errors.push(e.message));
+await page.goto('http://127.0.0.1:5173');
+await page.getByRole('button',{name:'반가워!',exact:true}).click();
+await page.getByText('북쪽 하늘에서 나를 찾아봐.',{exact:false}).waitFor();
+await page.getByRole('button',{name:'네 주변에는 누가 있어?'}).click();
+await page.getByRole('button',{name:'좋아, 첫 별을 찾아보자'}).click();
+await page.getByRole('application').waitFor();
+await page.reload();
+await page.setViewportSize({width:390,height:844});
+await page.screenshot({path:'docs/welcome-mobile.png',fullPage:true});
+if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)) throw Error('Horizontal overflow');
+await page.getByRole('button',{name:'대화 건너뛰고 별 잇기'}).click();
+await page.getByRole('application').waitFor();
+if(errors.length) throw Error(errors.join('\n'));
+console.log('PASS: dialogue, puzzle entry, skip, mobile overflow, no page errors');
+await browser.close();
+

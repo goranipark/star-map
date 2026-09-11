@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styles from './App.module.css';
 
 import { SCREEN } from './game/screens.js';
@@ -8,6 +8,7 @@ import {
   nextConstellation,
 } from './game/constellations.js';
 import { useProgress } from './game/useProgress.js';
+import { loadDraft, saveDraft } from './game/drafts.js';
 import {
   disposeAudio,
   playFeedback,
@@ -39,6 +40,10 @@ const SCREEN_TITLE = {
 export default function App() {
   const {
     progress,
+    saveFailed,
+    retrySave,
+    conflict,
+    saving,
     completedIds,
     myConstellations,
     starWeavingUnlocked,
@@ -57,6 +62,15 @@ export default function App() {
   /** 도감에서 "다시 보기"로 들어온 경우 — 완성 축하 문구를 띄우지 않는다. */
   const [replaying, setReplaying] = useState(false);
   const [updateRegistration, setUpdateRegistration] = useState(null);
+  const [reloadDeferred, setReloadDeferred] = useState(false);
+  const [draft, setDraft] = useState(loadDraft);
+  const [draftFailed, setDraftFailed] = useState(false);
+  const stateRef = useRef({});
+  stateRef.current = { screen, saving, saveFailed, draftFailed };
+  const updateDraft = useCallback((next) => {
+    setDraft(next);
+    setDraftFailed(!saveDraft(next));
+  }, []);
   const soundOn = progress.settings?.sound !== false;
 
   useEffect(() => setAudioEnabled(soundOn), [soundOn]);
@@ -73,7 +87,15 @@ export default function App() {
   }, []);
 
   useEffect(
-    () => registerServiceWorker({ onUpdate: setUpdateRegistration }),
+    () => registerServiceWorker({
+      onUpdate: setUpdateRegistration,
+      canReload: () => {
+        const state = stateRef.current;
+        return state.screen !== SCREEN.STAR_WEAVER && state.screen !== SCREEN.PUZZLE
+          && !state.saving && !state.saveFailed && !state.draftFailed;
+      },
+      onReloadDeferred: () => setReloadDeferred(true),
+    }),
     []
   );
 
@@ -97,12 +119,12 @@ export default function App() {
     setScreen(SCREEN.PUZZLE);
   }, [completedIds, setLastPlayed]);
 
-  /** 퍼즐 완성 → 진행 상황 저장 → 이야기 화면 */
+  const handleSolved = useCallback(() => complete(currentId), [complete, currentId]);
+  /** 완료 기록은 마지막 선을 잇는 순간 저장하고, 연출 뒤에는 화면만 전환한다. */
   const handleStageClear = useCallback(() => {
-    complete(currentId);
     setReplaying(false);
     setScreen(SCREEN.STORY);
-  }, [complete, currentId]);
+  }, []);
 
   /** 이야기를 다 본 뒤 다음 별자리로 이어서 도전 */
   const handleNextStage = useCallback(() => {
@@ -127,7 +149,7 @@ export default function App() {
   }, [reset]);
 
   return (
-    <div className={styles.app}>
+    <div className={`${styles.app} ${screen !== SCREEN.TITLE ? styles.journey : ''}`}>
       {/* 퍼즐 화면은 자기 안에 진짜 밤하늘을 그리므로 장식 별을 겹쳐 그리지 않는다 */}
       {screen !== SCREEN.PUZZLE && screen !== SCREEN.STAR_WEAVER && <BackgroundStars />}
 
@@ -155,6 +177,13 @@ export default function App() {
         />
       )}
 
+      {saveFailed && screen !== SCREEN.STAR_WEAVER && (
+        <aside role="alert" className={styles.saveWarning}>
+          <span>기기에 저장하지 못했어요. 새로고침하거나 창을 닫으면 이번 기록이 사라질 수 있어요.</span>
+          <button type="button" className="btnGhost" onClick={retrySave}>다시 저장하기</button>
+        </aside>
+      )}
+      {conflict && <aside role="alert" className={styles.saveWarning}>{conflict}</aside>}
       {/* key를 화면마다 다르게 주어 전환할 때 페이드인이 다시 실행되게 한다 */}
       <main className={styles.stage} key={`${screen}-${currentId}`}>
         {screen === SCREEN.TITLE && (
@@ -170,6 +199,7 @@ export default function App() {
             constellation={current}
             completedConstellations={completedConstellations}
             onClear={handleStageClear}
+            onSolved={handleSolved}
             onFeedback={playFeedback}
           />
         )}
@@ -199,6 +229,11 @@ export default function App() {
 
         {screen === SCREEN.STAR_WEAVER && (
           <StarWeaverScreen
+            draft={draft}
+            onDraftChange={updateDraft}
+            draftFailed={draftFailed}
+            conflict={conflict}
+            myConstellations={myConstellations}
             onSave={saveMyConstellation}
             onExit={() => go(SCREEN.ALMANAC)}
             onFeedback={playFeedback}
@@ -206,10 +241,11 @@ export default function App() {
         )}
       </main>
 
-      {updateRegistration && (
+      {(updateRegistration || reloadDeferred) && screen !== SCREEN.STAR_WEAVER
+        && screen !== SCREEN.PUZZLE && !saving && !saveFailed && !draftFailed && (
         <UpdateBanner
-          onUpdate={() => activateWaitingWorker(updateRegistration)}
-          onDismiss={() => setUpdateRegistration(null)}
+          onUpdate={() => reloadDeferred ? window.location.reload() : activateWaitingWorker(updateRegistration)}
+          onDismiss={() => { setUpdateRegistration(null); setReloadDeferred(false); }}
         />
       )}
     </div>

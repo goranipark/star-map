@@ -238,3 +238,10 @@
 @media(max-width:760px) {
  .content { background:linear-gradient(180deg,#09172555,#091725e6 20%,#091725b0); }
 }
+
+.title { color:#e4c990; word-break:keep-all; font-size:clamp(32px,3.2vw,54px); }
+.chapter { font-size:16px; letter-spacing:.12em; }
+@media(max-width:760px) {
+ .title { font-size:clamp(30px,8vw,40px); }
+ .chapter { font-size:13px; }
+}

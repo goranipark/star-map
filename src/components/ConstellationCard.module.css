@@ -32,7 +32,7 @@ button.card:disabled {
   width: 84px;
   height: 84px;
   border-radius: var(--radius-card);
-  background: rgba(11, 12, 31, 0.6);
+  background: rgba(8, 15, 28, 0.6);
   border: 1px solid var(--hairline);
 }
 
@@ -138,3 +138,7 @@ button.card:disabled {
 .large .power {
   font-size: 16px;
 }
+
+
+.card { background:linear-gradient(120deg,#193340e8,#0e2130ed); border-color:#d9bd803d; }
+.figure { background:radial-gradient(circle,#244553,#0c1c29); border-color:#d9bd8044; }

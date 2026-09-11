@@ -10,6 +10,7 @@ export default function PuzzleScreen({
   constellation,
   completedConstellations = [],
   onClear,
+  onSolved,
   onFeedback,
 }) {
   const [progress, setProgress] = useState({ drawn: 0, total: 0 });
@@ -35,6 +36,7 @@ export default function PuzzleScreen({
           completedConstellations={completedConstellations}
           showAnswer={showHint}
           onComplete={onClear}
+          onSolved={onSolved}
           onProgress={handleProgress}
           onFeedback={onFeedback}
         />

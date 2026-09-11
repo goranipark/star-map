@@ -38,7 +38,7 @@ const EMPTY = Object.freeze({
 });
 
 /** 한 기기에 너무 많이 쌓이지 않도록 (교실 공용 기기 대비) */
-const MAX_MY_CONSTELLATIONS = 12;
+export const MAX_MY_CONSTELLATIONS = 12;
 
 function emptyProgress() {
   return { ...EMPTY, settings: { ...EMPTY.settings }, myConstellations: [] };
@@ -78,7 +78,7 @@ export function loadProgress() {
 
     // 데이터에 더 이상 없는 별자리 id는 걸러낸다(별자리를 삭제·개명한 경우 대비).
     const completed = Array.isArray(parsed.completed)
-      ? parsed.completed.filter((id) => Boolean(getConstellation(id)))
+      ? [...new Set(parsed.completed.filter((id) => Boolean(getConstellation(id))))]
       : [];
 
     return {
@@ -97,21 +97,47 @@ export function loadProgress() {
 }
 
 /** 저장해 둔 성좌가 그릴 수 있는 모양인지 확인한다 (손상된 값 걸러내기). */
-function isUsableMyConstellation(c) {
-  return (
-    c &&
-    typeof c.id === 'string' &&
-    Array.isArray(c.stars) &&
-    c.stars.length >= 2 &&
-    Array.isArray(c.lines) &&
-    c.lines.length >= 1
-  );
+export function isUsableMyConstellation(c) {
+  const text = (v) => typeof v === 'string';
+  if (!c || !text(c.id) || !c.id || !text(c.name) || !c.name.trim()
+    || !c.card || !text(c.card.epithet) || !text(c.card.power)
+    || !Array.isArray(c.stars) || c.stars.length < 2
+    || !Array.isArray(c.lines) || c.lines.length < 1) return false;
+  for (const field of ['aka', 'latinName', 'author', 'createdAt']) {
+    if (c[field] !== undefined && !text(c[field])) return false;
+  }
+  const ids = new Set();
+  for (const star of c.stars) {
+    if (!star || !text(star.id) || !star.id || ids.has(star.id)
+      || !Number.isFinite(star.ra) || star.ra < 0 || star.ra >= 24
+      || !Number.isFinite(star.dec) || star.dec < -90 || star.dec > 90
+      || !Number.isFinite(star.mag)) return false;
+    ids.add(star.id);
+  }
+  const keys = new Set();
+  for (const line of c.lines) {
+    if (!Array.isArray(line) || line.length !== 2) return false;
+    const [a, b] = line;
+    if (!ids.has(a) || !ids.has(b) || a === b) return false;
+    const key = JSON.stringify([a, b].sort());
+    if (keys.has(key)) return false;
+    keys.add(key);
+  }
+  return true;
+}
+
+export class ProgressWriteError extends Error {
+  constructor(progress) {
+    super('진행 기록을 기기에 저장하지 못했습니다.');
+    this.name = 'ProgressWriteError';
+    this.progress = progress;
+  }
 }
 
 /** 진행 상황을 통째로 저장한다. 저장된 객체를 그대로 돌려준다. */
 export function saveProgress(progress) {
   const next = { ...progress, version: 1, updatedAt: new Date().toISOString() };
-  safeWrite(JSON.stringify(next));
+  if (!safeWrite(JSON.stringify(next))) throw new ProgressWriteError(next);
   return next;
 }
 
@@ -152,15 +178,33 @@ export function resetProgress() {
 ------------------------------------------------------------------ */
 
 /** 만든 성좌를 저장한다. 같은 id가 있으면 덮어쓴다(수정). */
-export function saveMyConstellation(progress, myConstellation) {
+export class ConstellationCapacityError extends Error {}
+
+export function saveMyConstellation(progress, myConstellation, replaceId = null) {
+  if (!isUsableMyConstellation(myConstellation)) throw new TypeError("유효하지 않은 성좌입니다.");
   const list = progress.myConstellations ?? [];
   const exists = list.some((c) => c.id === myConstellation.id);
+  const replacing = !exists && replaceId !== null;
+  if (replacing && !list.some((c) => c.id === replaceId)) {
+    throw new ConstellationCapacityError('교체할 작품을 다시 선택해 주세요.');
+  }
+  if (!exists && !replacing && list.length >= MAX_MY_CONSTELLATIONS) {
+    throw new ConstellationCapacityError('도감이 가득 찼어요. 교체할 작품을 선택해 주세요.');
+  }
 
   const next = exists
     ? list.map((c) => (c.id === myConstellation.id ? myConstellation : c))
-    : [...list, myConstellation].slice(-MAX_MY_CONSTELLATIONS);
+    : replacing
+      ? list.map((c) => c.id === replaceId ? myConstellation : c)
+      : [...list, myConstellation];
 
-  return saveProgress({ ...progress, myConstellations: next });
+  try {
+    return saveProgress({ ...progress, myConstellations: next });
+  } catch (error) {
+    // 교체 저장이 실패하면 기존 작품을 메모리에서도 보존한다. 새 작품은 편집 화면에 남는다.
+    if (replacing && error instanceof ProgressWriteError) throw new ProgressWriteError(progress);
+    throw error;
+  }
 }
 
 /** 만든 성좌 하나를 지운다. */
@@ -176,7 +220,7 @@ export function removeMyConstellation(progress, id) {
  * concept.md의 진행 구조에 맞춰 **도감 5장을 모두 채운 뒤** 열린다.
  */
 export function isStarWeavingUnlocked(progress) {
-  return progress.completed.length >= constellations.length;
+  return constellations.every((c) => progress.completed.includes(c.id));
 }
 
 export function isCompleted(progress, constellationId) {

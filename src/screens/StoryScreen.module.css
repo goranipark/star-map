@@ -44,3 +44,5 @@
 .next {
   flex: 0 0 auto;
 }
+
+.banner { background:linear-gradient(110deg,#d9bd8026,#d9bd800c); border-color:#d9bd8055; }

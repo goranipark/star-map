@@ -65,7 +65,7 @@
   width: min(46vw, 52vh, 420px);
   aspect-ratio: 1;
   border-radius: var(--radius-card);
-  background: rgba(11, 12, 31, 0.55);
+  background: rgba(8, 15, 28, 0.55);
   border: 1px solid var(--hairline);
   overflow: hidden;
 }
@@ -195,6 +195,7 @@
   }
 }
 
+
 @media (max-width: 420px) {
   .slide {
     padding: var(--space-md);
@@ -220,3 +221,9 @@
     padding-inline: var(--space-md);
   }
 }
+
+
+.slide { background:linear-gradient(135deg,#193542ed,#0d1e2bf5); border-color:#d9bd8055; box-shadow:0 20px 60px #030d1833; }
+.text { font-family:var(--font-display); color:#f1e6d0; word-break:keep-all; }
+.title { letter-spacing:.025em; }
+.figureBox { border-color:#d9bd8055; }

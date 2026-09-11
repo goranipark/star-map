@@ -191,3 +191,11 @@
   .panel > * { flex-shrink: 0; }
   .guide, .aka { display: none; }
 }
+
+.panel { background:linear-gradient(140deg,#1a3541f2,#0c1e2bf5); border-color:#d9bd8055; box-shadow:inset 0 0 0 5px #d9bd8006,0 16px 48px #030d1826; }
+.name { text-shadow:none; letter-spacing:-.025em; }
+.guide { color:#c0ccd0; line-height:1.85; }
+.hint { border-left:2px solid var(--gold); background:#d9bd8010; }
+@media(min-width:901px) {
+ .panel::before { content:'✧  북극성의 안내'; color:#d9bd80; font-size:12px; letter-spacing:.1em; border-bottom:1px solid #d9bd8033; padding-bottom:12px; width:100%; }
+}

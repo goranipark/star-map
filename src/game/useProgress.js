@@ -1,53 +1,92 @@
-import { useCallback, useState } from 'react';
-import * as progressStore from './progress.js';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import * as store from './progress.js';
+import { transactProgress, saveCardOperation, removeCardOperation } from './progressTransactions.js';
 
-/**
- * 진행 상황을 화면에서 쓰기 쉽게 감싼 훅.
- *
- * 저장은 progress.js가 localStorage에 바로바로 한다.
- * 여기서는 그 결과를 화면에 반영하기 위한 상태만 들고 있는다.
- */
 export function useProgress() {
-  // 첫 렌더에서 딱 한 번만 읽는다 (localStorage 접근이 매 렌더마다 일어나지 않도록)
-  const [progress, setProgress] = useState(() => progressStore.loadProgress());
-
-  const complete = useCallback((constellationId) => {
-    setProgress((prev) => progressStore.markCompleted(prev, constellationId));
+  const [progress, setProgress] = useState(store.loadProgress);
+  const progressRef = useRef(progress);
+  const [saveFailed, setSaveFailed] = useState(false);
+  const [conflict, setConflict] = useState('');
+  const [saving, setSaving] = useState(false);
+  const pending = useRef([]);
+  const queue = useRef(Promise.resolve());
+  const publish = useCallback((next) => {
+    progressRef.current = next;
+    setProgress(next);
   }, []);
 
-  const setLastPlayed = useCallback((constellationId) => {
-    setProgress((prev) => progressStore.markLastPlayed(prev, constellationId));
-  }, []);
+  const apply = useCallback((operation, remember = true) => {
+    if (operation) pending.current.push({ operation, remember });
+    setSaving(true);
+    const run = async () => {
+      let success = true;
+      let outcome;
+      setConflict('');
+      while (pending.current.length) {
+        const item = pending.current[0];
+        try {
+          const next = await transactProgress(item.operation);
+          publish(next);
+          if (pending.current[0] === item) pending.current.shift();
+        } catch (error) {
+          success = false;
+          if (error instanceof store.ConstellationCapacityError) {
+            outcome = 'conflict';
+            setConflict(error.message);
+            publish(store.loadProgress());
+            if (pending.current[0] === item) pending.current.shift();
+          } else {
+            // Keep operations, not old snapshots, for retries against current storage.
+            if (item.remember && error instanceof store.ProgressWriteError) publish(error.progress);
+            if (!item.remember && pending.current[0] === item) pending.current.shift();
+            setSaveFailed(true);
+          }
+          break;
+        }
+      }
+      if (success) setSaveFailed(false);
+      setSaving(false);
+      return outcome || success;
+    };
+    const result = queue.current.then(run, run);
+    queue.current = result;
+    return result;
+  }, [publish]);
 
-  const setSettings = useCallback((patch) => {
-    setProgress((prev) => progressStore.updateSettings(prev, patch));
-  }, []);
+  useEffect(() => {
+    const sync = (event) => {
+      if (event.key !== store.STORAGE_KEY && event.key !== null) return;
+      if (event.newValue === null) pending.current = [];
+      publish(store.loadProgress());
+    };
+    window.addEventListener('storage', sync);
+    return () => window.removeEventListener('storage', sync);
+  }, [publish]);
 
+  const complete = useCallback((id) => apply((latest) => store.markCompleted(latest, id)), [apply]);
+  const setLastPlayed = useCallback((id) => apply((latest) => store.markLastPlayed(latest, id)), [apply]);
+  const setSettings = useCallback((patch) => apply((latest) => store.updateSettings(latest, patch)), [apply]);
   const reset = useCallback(() => {
-    setProgress(progressStore.resetProgress());
-  }, []);
-
-  /** 아이가 만든 성좌 저장 (같은 id면 덮어쓴다) */
-  const saveMyConstellation = useCallback((myConstellation) => {
-    setProgress((prev) => progressStore.saveMyConstellation(prev, myConstellation));
-  }, []);
-
+    pending.current = [];
+    return apply(() => store.resetProgress());
+  }, [apply]);
+  const saveMyConstellation = useCallback((card, replaceId = null, chosenCard) => {
+    const expected = chosenCard ?? progressRef.current.myConstellations.find((c) => c.id === (replaceId || card.id));
+    return apply(saveCardOperation(card, replaceId, expected), false);
+  }, [apply]);
   const removeMyConstellation = useCallback((id) => {
-    setProgress((prev) => progressStore.removeMyConstellation(prev, id));
-  }, []);
+    const expected = progressRef.current.myConstellations.find((c) => c.id === id);
+    return apply(removeCardOperation(id, expected), false);
+  }, [apply]);
+  const retrySave = useCallback(() => apply(null), [apply]);
 
   return {
-    progress,
+    progress, saveFailed, conflict, saving, retrySave,
     completedIds: progress.completed,
-    myConstellations: progress.myConstellations ?? [],
-    starWeavingUnlocked: progressStore.isStarWeavingUnlocked(progress),
-    complete,
-    setLastPlayed,
-    setSettings,
-    reset,
-    saveMyConstellation,
-    removeMyConstellation,
-    isCompleted: (id) => progressStore.isCompleted(progress, id),
-    isUnlocked: (id) => progressStore.isUnlocked(progress, id),
+    myConstellations: progress.myConstellations,
+    starWeavingUnlocked: store.isStarWeavingUnlocked(progress),
+    complete, setLastPlayed, setSettings, reset, saveMyConstellation, removeMyConstellation,
+    isCompleted: (id) => store.isCompleted(progress, id),
+    isUnlocked: (id) => store.isUnlocked(progress, id),
   };
 }

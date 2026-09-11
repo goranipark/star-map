@@ -5,7 +5,7 @@
   align-items: center;
   gap: var(--space-md);
   padding: var(--space-sm) var(--space-md);
-  background: rgba(28, 32, 56, 0.55);
+  background: rgba(19, 35, 48, 0.55);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--hairline);
@@ -65,3 +65,9 @@
   .iconBtn { width: 40px; height: 40px; min-height: 40px; }
   .iconBtnSpacer { width: 40px; height: 40px; }
 }
+
+
+.bar { background:linear-gradient(90deg,#0b1b2af5,#16323de8,#0b1b2af5); border-bottom-color:#d9bd8044; padding-block:12px; }
+.title { color:#efdcba; letter-spacing:.035em; }
+.iconBtn { background:#10273588; border-color:#d9bd8044; }
+@media(max-height:700px),(max-width:560px) { .bar { padding-block:8px; } }

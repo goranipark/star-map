@@ -1,0 +1,127 @@
+.wrap {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-xl) var(--space-lg);
+  text-align: center;
+  overflow-y: auto;
+}
+
+@media (max-height: 560px) {
+  .wrap {
+    justify-content: flex-start;
+    padding-block: var(--space-md);
+  }
+
+  .planisphere {
+    width: min(30vmin, 150px);
+    margin-bottom: var(--space-sm);
+  }
+
+  .actions {
+    margin-top: var(--space-md);
+  }
+}
+
+/* ---------- 성도판 ---------- */
+.planisphere {
+  position: relative;
+  width: min(46vmin, 300px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  margin-bottom: var(--space-lg);
+}
+
+.ringOuter,
+.ringInner {
+  position: absolute;
+  border-radius: var(--radius-round);
+  border: 1px solid var(--hairline);
+}
+
+.ringOuter {
+  inset: 0;
+  border-top-color: var(--gold);
+  animation: spin 48s linear infinite;
+}
+
+.ringInner {
+  inset: 22%;
+  border-left-color: var(--gold);
+  animation: spin 32s linear infinite reverse;
+}
+
+/* 중앙에 고정된 북극성 */
+.polaris {
+  width: 42%;
+  height: 42%;
+  overflow: visible;
+  filter: drop-shadow(0 0 10px rgba(245, 207, 121, 0.25));
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+}
+
+/* ---------- 텍스트 ---------- */
+.title {
+  font-size: var(--size-display);
+  color: var(--gold);
+  text-shadow: var(--glow-gold);
+}
+
+.subtitle {
+  /* 한글은 ch 단위가 잘 맞지 않아 px로 지정한다 */
+  max-width: 420px;
+  color: var(--text-muted);
+  margin-top: var(--space-xs);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-md);
+  margin-top: var(--space-xl);
+}
+
+/* 저장된 진행 상황이 있을 때만 보이는 안내 */
+.saved {
+  margin-top: var(--space-md);
+  color: var(--gold);
+  letter-spacing: 0.06em;
+}
+
+/* Preserve the original entry palette independently of the current app theme. */
+.wrap {
+  --gold:#e8c158;
+  --text-primary:#e4e7f0;
+  --text-muted:rgba(228,231,240,.6);
+  --hairline:rgba(228,231,240,.16);
+  --hairline-strong:rgba(228,231,240,.3);
+  --glow-gold:0 0 12px rgba(232,193,88,.45);
+  color:var(--text-primary);
+  background:radial-gradient(circle at 50% 40%,rgba(60,50,120,.35),transparent 70%),#0b0c1f;
+}
+.actions :global(.btnPrimary) { background:var(--gold); border:0; color:#1a1508; }
+.actions :global(.btnGhost) { background:rgba(28,32,56,.5); }

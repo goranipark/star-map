@@ -16,7 +16,7 @@
 
 /** 성도판을 그리는 정사각형 좌표계 (SVG viewBox "0 0 100 100" 기준). */
 export const SKY = {
-  /** 성도판 중심 = 천구 북극 = 북극성 자리 */
+  /** 성도판 중심 = 천구 북극. 북극성은 이 점 가까이에 따로 투영된다. */
   cx: 50,
   cy: 50,
   /** 성도판 원반의 반지름 (가장자리에 여백 4를 남긴다) */
@@ -35,7 +35,7 @@ const DEG = Math.PI / 180;
  * @param {number} [rotationDeg=0] 성도판 전체를 돌리는 각도(도).
  *        스테이지 전환 연출이나 계절 표현에 쓴다. 0이면 적경 0h가 화면 위쪽.
  * @returns {{x: number, y: number, r: number}}
- *          x, y는 viewBox 좌표. r은 중심에서의 거리 비율(0=북극성, 1=원반 가장자리).
+ *          x, y는 viewBox 좌표. r은 중심에서의 거리 비율(0=천구 북극, 1=원반 가장자리).
  */
 export function projectStar(ra, dec, rotationDeg = 0) {
   // 극에서 떨어진 정도(0~1). 적위가 높을수록 중심에 가깝다.

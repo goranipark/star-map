@@ -5,25 +5,25 @@
 
 :root {
   /* ---------- 2-2. 색상 ---------- */
-  --bg-sky: #0b0c1f;
-  --bg-field: #1c2038;
+  --bg-sky: #080f1c;
+  --bg-field: #132330;
   --bg-nebula: radial-gradient(
     circle at 50% 40%,
-    rgba(60, 50, 120, 0.35),
+    rgba(35, 67, 75, 0.28),
     transparent 70%
   );
 
-  --gold: #e8c158;
-  --gold-soft: rgba(232, 193, 88, 0.15);
+  --gold: #dfc38b;
+  --gold-soft: rgba(223, 195, 139, 0.15);
 
-  --star-white: #f5f7ff;
-  --line-cyan: #7fd8e8;
+  --star-white: #fff5df;
+  --line-cyan: #a4cbd0;
 
-  --text-primary: #e4e7f0;
-  --text-muted: rgba(228, 231, 240, 0.6);
+  --text-primary: #f1e6d0;
+  --text-muted: #aeb9bf;
 
-  --hairline: rgba(228, 231, 240, 0.16);
-  --hairline-strong: rgba(228, 231, 240, 0.3);
+  --hairline: rgba(213, 193, 154, 0.16);
+  --hairline-strong: rgba(213, 193, 154, 0.3);
 
   --wrong-red: #e06666;
 
@@ -55,9 +55,9 @@
   --touch-min: 44px;
 
   /* ---------- 발광(글로우) — 그림자는 쓰지 않는다 ---------- */
-  --glow-gold: 0 0 12px rgba(232, 193, 88, 0.45);
-  --glow-gold-strong: 0 0 24px rgba(232, 193, 88, 0.7);
-  --glow-star: 0 0 8px rgba(245, 247, 255, 0.55);
+  --glow-gold: 0 0 12px rgba(223, 195, 139, 0.45);
+  --glow-gold-strong: 0 0 24px rgba(223, 195, 139, 0.7);
+  --glow-star: 0 0 8px rgba(255, 245, 223, 0.55);
 
   /* ---------- 모션 (design.md 6장) ---------- */
   --dur-line-draw: 300ms;
@@ -75,3 +75,4 @@
     --size-body: 16px;
   }
 }
+

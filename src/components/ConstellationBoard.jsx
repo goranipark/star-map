@@ -40,6 +40,8 @@ export default function ConstellationBoard({
   mode = 'puzzle',
   showAnswer = false,
   onComplete,
+  onSolved,
+  initialLines = [],
   onProgress,
   onFeedback,
   /** 자유 연결 모드에서 이은 선이 바뀔 때마다 알려 준다 — [[별id, 별id], ...] */
@@ -71,10 +73,13 @@ export default function ConstellationBoard({
    * 직전 탭의 결과를 못 보고 연결을 놓칠 수 있다.
    * 그래서 판정에 쓰는 값은 ref로도 들고 있으면서 항상 최신 값을 보게 한다.
    */
-  const drawnRef = useRef(new Map());
+  const drawnRef = useRef(new Map(initialLines.map((line) => [lineKey(...line), line])));
   const selectedRef = useRef(null);
 
-  const [drawn, setDrawn] = useState(() => new Map()); // key -> [aId, bId]
+  const [drawn, setDrawn] = useState(() => new Map(drawnRef.current)); // key -> [aId, bId]
+  const solvedRef = useRef(false);
+  const onSolvedRef = useRef(onSolved);
+  onSolvedRef.current = onSolved;
   const [wrong, setWrong] = useState([]); // [{ id, a, b }]
   const [selectedId, setSelectedId] = useState(null);
   const dragRef = useRef(null); // { fromId, moved }
@@ -82,6 +87,25 @@ export default function ConstellationBoard({
   const [celebrating, setCelebrating] = useState(false);
   const [zoomed, setZoomed] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState('');
+  useEffect(() => {
+    const cancel = () => {
+      const pointerId = dragRef.current?.pointerId;
+      dragRef.current = null;
+      selectedRef.current = null;
+      setSelectedId(null);
+      setDragPos(null);
+      if (pointerId !== undefined) {
+        try { svgRef.current?.releasePointerCapture(pointerId); } catch { /* already released */ }
+      }
+    };
+    const hidden = () => { if (document.hidden) cancel(); };
+    window.addEventListener('blur', cancel);
+    document.addEventListener('visibilitychange', hidden);
+    return () => {
+      window.removeEventListener('blur', cancel);
+      document.removeEventListener('visibilitychange', hidden);
+    };
+  }, []);
   const onFeedbackRef = useRef(onFeedback);
   onFeedbackRef.current = onFeedback;
 
@@ -162,10 +186,11 @@ export default function ConstellationBoard({
      스테이지가 바뀌면 판을 새로 깐다.
   --------------------------------------------------------------- */
   useEffect(() => {
-    drawnRef.current = new Map();
+    drawnRef.current = new Map((free ? initialLines : []).map((line) => [lineKey(...line), line]));
+    solvedRef.current = false;
     selectedRef.current = null;
     dragRef.current = null;
-    setDrawn(new Map());
+    setDrawn(new Map(drawnRef.current));
     setWrong([]);
     setSelectedId(null);
     setDragPos(null);
@@ -243,6 +268,11 @@ export default function ConstellationBoard({
         drawnRef.current = next;
         setDrawn(next);
         setFeedbackMessage(free ? '선을 이었어요.' : '맞는 연결이에요.');
+        // Commit completion in the input event; the celebration timer only navigates.
+        if (!free && !solvedRef.current && answers.size > 0 && next.size === answers.size) {
+          solvedRef.current = true;
+          onSolvedRef.current?.();
+        }
         onFeedbackRef.current?.('correct');
         return;
       }
@@ -294,8 +324,19 @@ export default function ConstellationBoard({
     setSelectedId(id);
   };
 
+  const cancelPointer = (event) => {
+    const drag = dragRef.current;
+    if (event && drag?.pointerId !== event.pointerId) return;
+    dragRef.current = null;
+    setDragPos(null);
+    select(null);
+    if (drag) {
+      try { svgRef.current?.releasePointerCapture(drag.pointerId); } catch { /* already released */ }
+    }
+  };
+
   const handlePointerDown = (event) => {
-    if (celebrating) return;
+    if (celebrating || dragRef.current || event.isPrimary === false || event.button !== 0) return;
     const point = toSkyPoint(event);
     const star = starAt(point);
     if (!star) {
@@ -308,13 +349,13 @@ export default function ConstellationBoard({
     } catch {
       /* 캡처하지 못해도 연결 동작에는 지장이 없다 */
     }
-    dragRef.current = { fromId: star.id, moved: false };
+    dragRef.current = { pointerId: event.pointerId, fromId: star.id, moved: false };
     setDragPos(null);
   };
 
   const handlePointerMove = (event) => {
     const drag = dragRef.current;
-    if (!drag) return;
+    if (!drag || drag.pointerId !== event.pointerId) return;
     const point = toSkyPoint(event);
     if (!point) return;
     const from = starById[drag.fromId];
@@ -326,7 +367,13 @@ export default function ConstellationBoard({
 
   const handlePointerUp = (event) => {
     const drag = dragRef.current;
-    if (!drag) return;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    if (event.clientX < bounds.left || event.clientX > bounds.right
+      || event.clientY < bounds.top || event.clientY > bounds.bottom) {
+      cancelPointer(event);
+      return;
+    }
     const point = toSkyPoint(event);
     const target = starAt(point);
 
@@ -334,7 +381,7 @@ export default function ConstellationBoard({
       // 드래그해서 다른 별에 놓았다
       tryConnect(drag.fromId, target.id);
       select(null);
-    } else if (!drag.moved) {
+    } else if (target && !drag.moved) {
       // 제자리에서 탭했다 — 탭 두 번으로 잇는 방식
       const selected = selectedRef.current;
       if (selected && selected !== drag.fromId) {
@@ -343,9 +390,12 @@ export default function ConstellationBoard({
       } else {
         select(selected === drag.fromId ? null : drag.fromId);
       }
+    } else {
+      select(null);
     }
     dragRef.current = null;
     setDragPos(null);
+    try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* already released */ }
   };
 
   /* ---------------------------------------------------------------
@@ -355,9 +405,7 @@ export default function ConstellationBoard({
 
   const changeView = (level, overview = false) => {
     clearTimeout(overviewTimer.current);
-    dragRef.current = null;
-    setDragPos(null);
-    select(null);
+    cancelPointer();
     setZoomLevel(clamp(level, 0, 1));
     setZoomed(!overview);
   };
@@ -373,9 +421,10 @@ export default function ConstellationBoard({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-      onPointerCancel={() => {
-        dragRef.current = null;
-        setDragPos(null);
+      onPointerCancel={cancelPointer}
+      onLostPointerCapture={cancelPointer}
+      onPointerLeave={(event) => {
+        if (!event.currentTarget.hasPointerCapture?.(event.pointerId)) cancelPointer(event);
       }}
     >
       <g

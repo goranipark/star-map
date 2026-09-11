@@ -1,0 +1,7 @@
+# Polaris with restored background
+
+Built-in image generation edit. Final asset: `public/art/polaris-portal.png`.
+
+## Final prompt
+
+Redesign this exact Polaris illustration as a complete portrait 2:3 fantasy web novel cover scene for a constellation learning app. Preserve the character identity, silver hair, golden eyes, navy ivory gold robes and inviting expression. RESTORE AND KEEP the rich visible background: deep teal-blue star-filled sky, luminous golden celestial circular halo, bright north star overhead, Alphonse Mucha botanical gold arch with ivory flowers, distant magical landscape. Crucial composition: zoom out so entire head, shoulders, flowing hair, extended hand and ornamental arch all sit comfortably INSIDE the canvas with generous breathing room on all four sides. The character reaches THROUGH the ornate circular arch toward the viewer; hand and a few flowing ribbons visibly overlap IN FRONT OF the inner gold arch, giving a strong pop-out trompe-l'oeil depth effect. Exactly five clearly visible hand digits: thumb and four fingers, anatomically graceful open palm. Background remains detailed, colorful and luminous, NEVER plain flat navy, NEVER transparent, no checkerboard. Keep bright face and clothing, no dark vignette over character. Outer edges are a calm midnight blue starfield to join app background without harsh frame. No text or logo. Premium detailed painterly Korean fantasy cover meets Mucha.

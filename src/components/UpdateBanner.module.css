@@ -11,7 +11,7 @@
   padding: var(--space-md);
   border: 1px solid var(--hairline-strong);
   border-radius: var(--radius-card);
-  background: #1c2038;
+  background: var(--bg-field);
   color: var(--text-primary);
 }
 
@@ -30,4 +30,5 @@
     bottom: max(var(--space-sm), env(safe-area-inset-bottom));
   }
 }
+
 

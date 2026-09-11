@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import styles from './StarWeaverScreen.module.css';
 
 import ConstellationBoard from '../components/ConstellationBoard.jsx';
@@ -6,6 +6,7 @@ import ConstellationCard from '../components/ConstellationCard.jsx';
 import { allSkyStars } from '../game/sky.js';
 import { EPITHET_GROUPS, randomEpithet } from '../game/epithets.js';
 import { downloadCardImage } from '../game/cardImage.js';
+import { MAX_MY_CONSTELLATIONS } from '../game/progress.js';
 
 /** 카드가 성립하려면 최소한 이만큼은 이어야 한다. */
 const MIN_LINES = 2;
@@ -26,18 +27,35 @@ const AUTHOR_MAX = 10;
  * 세 걸음으로 나눠 한 화면에 하나씩만 시킨다.
  *   1) 별 잇기  2) 카드 채우기  3) 완성
  */
-export default function StarWeaverScreen({ onSave, onExit, onFeedback }) {
-  const [step, setStep] = useState(1);
-  const [lines, setLines] = useState([]);
+export default function StarWeaverScreen({ onSave, onExit, onFeedback, myConstellations = [], draft, onDraftChange, draftFailed, conflict }) {
+  const [step, setStep] = useState(draft?.step ?? 1);
+  const [lines, setLines] = useState(draft?.lines ?? []);
   const [clearToken, setClearToken] = useState(0);
 
-  const [epithet, setEpithet] = useState('');
-  const [name, setName] = useState('');
-  const [power, setPower] = useState('');
-  const [author, setAuthor] = useState('');
+  const [epithet, setEpithet] = useState(draft?.epithet ?? '');
+  const [name, setName] = useState(draft?.name ?? '');
+  const [power, setPower] = useState(draft?.power ?? '');
+  const [author, setAuthor] = useState(draft?.author ?? '');
 
   const [saved, setSaved] = useState(false);
+  const [finishedCard, setFinishedCard] = useState(draft?.finishedCard ?? null);
+  const [isSaving, setIsSaving] = useState(false);
   const [downloadFailed, setDownloadFailed] = useState(false);
+  const [replaceId, setReplaceId] = useState('');
+  const [chosenCard, setChosenCard] = useState(null);
+  const atCapacity = myConstellations.length >= MAX_MY_CONSTELLATIONS
+    && !myConstellations.some((c) => c.id === finishedCard?.id);
+
+  useEffect(() => {
+    onDraftChange?.(saved ? null : { version: 1, step, lines, epithet, name, power, author, finishedCard });
+  }, [step, lines, epithet, name, power, author, finishedCard, saved, onDraftChange]);
+
+  useEffect(() => {
+    if (!conflict) return;
+    setStep(2);
+    setReplaceId('');
+    setFinishedCard(null);
+  }, [conflict]);
 
   const handleLines = useCallback((next) => setLines(next), []);
 
@@ -73,31 +91,45 @@ export default function StarWeaverScreen({ onSave, onExit, onFeedback }) {
   const enoughLines = lines.length >= MIN_LINES;
   const cardReady = Boolean(epithet && name.trim() && power.trim());
 
-  const handleSave = () => {
-    const finished = {
+  const handleSave = async () => {
+    if (isSaving) return;
+    if (!enoughLines || !cardReady) return;
+    if (atCapacity && !replaceId) return;
+    const finished = finishedCard ?? {
       ...myConstellation,
-      id: `my-${Date.now()}`,
+      id: `my-${crypto.randomUUID()}`,
       createdAt: new Date().toISOString(),
     };
-    onSave?.(finished);
-    setSaved(true);
+    setFinishedCard(finished);
+    setIsSaving(true);
+    const ok = await onSave?.(finished, atCapacity ? replaceId : null, atCapacity ? chosenCard : null);
+    setIsSaving(false);
+    if (ok === 'conflict') {
+      setStep(2);
+      setReplaceId('');
+      setChosenCard(null);
+      setFinishedCard(null);
+      return;
+    }
+    setSaved(ok === true);
     setStep(3);
   };
 
   const handleDownload = async () => {
-    const ok = await downloadCardImage(myConstellation);
+    const ok = await downloadCardImage(finishedCard ?? myConstellation);
     setDownloadFailed(!ok);
   };
 
   return (
     <section className={styles.wrap}>
+      {draftFailed && <p role="alert" className={styles.hint}>초안을 기기에 저장하지 못했어요. 이 화면을 닫기 전에 그림으로 저장해 주세요.</p>}
       {/* ---------------- 1) 별 잇기 ---------------- */}
-      {step === 1 && (
-        <>
+      <div style={{ display: step === 1 ? 'contents' : 'none' }} aria-hidden={step !== 1}>
           <div className={styles.boardArea}>
             <ConstellationBoard
               constellation={{ id: 'free', name: '나만의 성좌', stars: [], lines: [] }}
               mode="free"
+              initialLines={lines}
               onLinesChange={handleLines}
               clearToken={clearToken}
               onFeedback={onFeedback}
@@ -145,8 +177,7 @@ export default function StarWeaverScreen({ onSave, onExit, onFeedback }) {
               그만두고 도감으로
             </button>
           </aside>
-        </>
-      )}
+      </div>
 
       {/* ---------------- 2) 카드 채우기 ---------------- */}
       {step === 2 && (
@@ -225,11 +256,26 @@ export default function StarWeaverScreen({ onSave, onExit, onFeedback }) {
               />
             </label>
 
+            {atCapacity && (
+              <label className={styles.field}>
+                <span className={styles.fieldLabel}>도감 {MAX_MY_CONSTELLATIONS}칸이 가득 찼어요. 교체할 작품을 골라 주세요.</span>
+                <select className={styles.input} value={replaceId} onChange={(event) => {
+                  setReplaceId(event.target.value);
+                  setChosenCard(myConstellations.find((card) => card.id === event.target.value) ?? null);
+                }}>
+                  <option value="">기존 작품 유지</option>
+                  {myConstellations.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+                {replaceId && <span className={styles.hint}>완성하기를 누르면 선택한 작품을 새 작품으로 교체해요.</span>}
+                <button type="button" className="btnGhost" onClick={handleDownload}>새 작품을 그림으로 저장하기</button>
+              </label>
+            )}
+
             <div className={styles.actions}>
               <button type="button" className="btnGhost" onClick={() => setStep(1)}>
                 별 다시 잇기
               </button>
-              <button type="button" className="btnPrimary" onClick={handleSave} disabled={!cardReady}>
+              <button type="button" className="btnPrimary" onClick={handleSave} disabled={isSaving || !cardReady || (atCapacity && !replaceId)}>
                 성좌 완성하기
               </button>
             </div>
@@ -248,7 +294,7 @@ export default function StarWeaverScreen({ onSave, onExit, onFeedback }) {
             <p className="eyebrow">STEP 3 / 3</p>
             <h2 className={styles.heading}>성좌가 태어났어요</h2>
             <p className={styles.guide}>
-              {saved && '도감 마지막 칸에 담았어요. '}
+              {saved ? '도감 마지막 칸에 담았어요. ' : '기기에 저장하지 못했어요. 이 화면에서 다시 저장하거나 그림으로 내려받아 주세요. '}
               그림으로 저장하면 선생님께 내거나 인쇄해서 붙일 수 있어요.
             </p>
 
@@ -259,6 +305,10 @@ export default function StarWeaverScreen({ onSave, onExit, onFeedback }) {
             )}
 
             <div className={styles.actions}>
+              {!saved && <>
+                <button type="button" className="btnPrimary" onClick={handleSave} disabled={isSaving || (atCapacity && !replaceId)}>다시 저장하기</button>
+                <button type="button" className="btnGhost" onClick={() => { setStep(2); setFinishedCard(null); }}>카드 수정하기</button>
+              </>}
               <button type="button" className="btnPrimary" onClick={handleDownload}>
                 그림으로 저장하기
               </button>

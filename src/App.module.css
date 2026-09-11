@@ -25,3 +25,34 @@
     transform: none;
   }
 }
+.saveWarning {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--bg-field);
+  color: var(--text-primary);
+}
+
+/* The same celestial world continues beyond the invitation. */
+.journey {
+  --font-display:'Nanum Myeongjo','나눔명조','Batang','바탕',serif;
+  --bg-field:#112735;
+  --hairline:rgba(223,195,139,.22);
+  --hairline-strong:rgba(223,195,139,.42);
+  --radius-card:8px;
+  --radius-button:5px;
+  background:radial-gradient(ellipse at 12% 18%,#285c6b66,transparent 48%),radial-gradient(ellipse at 88% 78%,#314d663d,transparent 50%),radial-gradient(ellipse at 65% 0%,#ba97601c,transparent 35%),#091725;
+}
+.journey::before {
+  content:''; position:absolute; inset:12px; pointer-events:none; z-index:0;
+  border:1px solid #d9bd8018;
+  border-radius:40% 40% 8px 8px / 12% 12% 8px 8px;
+}
+.journey :global(.btnGhost) { background:linear-gradient(120deg,#183441e6,#0d202dcc); border-color:var(--hairline-strong); }
+.journey :global(.btnPrimary) { box-shadow:0 4px 20px #dfc38b18; }
+.journey :global(.eyebrow) { color:#cbb68e; }
+@media(max-width:760px) { .journey::before { inset:6px; } }

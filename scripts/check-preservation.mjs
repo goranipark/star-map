@@ -1,3 +1,4 @@
+import { browserOptions } from './browser-options.js';
 import assert from 'node:assert/strict';
 import { pathToFileURL } from 'node:url';
 import { constellations } from '../src/game/constellations.js';
@@ -5,7 +6,7 @@ import { projectStar, focusRotation } from '../src/game/projection.js';
 
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE
   ? pathToFileURL(process.env.PLAYWRIGHT_MODULE).href : 'playwright');
-const browser = await chromium.launch({ headless: true, channel: 'msedge' });
+const browser = await chromium.launch(browserOptions);
 const url = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173';
 const key = 'polaris-star-map/progress/v1';
 const c = constellations[0];

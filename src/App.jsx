@@ -142,10 +142,11 @@ export default function App() {
     setScreen(SCREEN.STORY);
   }, []);
 
-  const handleReset = useCallback(() => {
-    reset();
+  const handleReset = useCallback(async () => {
+    if (await reset() !== true) return false;
     setCurrentId(constellations[0].id);
     setReplaying(false);
+    return true;
   }, [reset]);
 
   return (

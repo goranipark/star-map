@@ -1,3 +1,4 @@
+import { browserOptions } from './browser-options.js';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
@@ -21,6 +22,8 @@ const server = createServer(async (request, response) => {
     if (relative === 'sw.js') {
       body = source.replace(/^const VERSION = .*;/, `const VERSION = "${version}";`);
       if (version === 'broken') body = body.replace('const PRECACHE = [', 'const PRECACHE = ["missing.js",');
+    } else if (relative === 'art/cache-probe.svg') {
+      body = `<svg xmlns="http://www.w3.org/2000/svg"><text>${version}</text></svg>`;
     } else {
       body = await readFile(filename);
       if (relative === 'index.html') body = body.toString().replace('<html', `<html data-build="${version}"`);
@@ -31,7 +34,7 @@ const server = createServer(async (request, response) => {
   } catch { response.writeHead(404); response.end(); }
 });
 await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
-const browser = await chromium.launch({ headless: true, channel: 'msedge' });
+const browser = await chromium.launch(browserOptions);
 try {
   const context = await browser.newContext();
   const page = await context.newPage();
@@ -39,6 +42,7 @@ try {
   await page.goto(url);
   await page.evaluate(() => navigator.serviceWorker.ready);
   await page.waitForFunction(() => !!navigator.serviceWorker.controller);
+  assert.match(await page.evaluate(async () => (await fetch('art/cache-probe.svg')).text()), /one/);
   await context.setOffline(true);
   await page.reload();
   await page.getByRole('button', { name: /나의 밤하늘 도감/ }).waitFor();
@@ -60,6 +64,7 @@ try {
   assert.equal(await page.locator('html').getAttribute('data-build'), 'one');
   await page.getByRole('button', { name: '지금 업데이트', exact: true }).click();
   await page.waitForFunction(() => document.documentElement.dataset.build === 'two');
+  assert.match(await page.evaluate(async () => (await fetch('art/cache-probe.svg')).text()), /two/, '같은 경로의 삽화를 새 버전으로 갱신');
   assert.equal(await editor.locator('html').getAttribute('data-build'), 'one', '다른 탭의 업데이트가 편집 화면을 새로고침하지 않는다');
   assert.equal(await editor.getByRole('application').isVisible(), true);
   assert.equal(await editor.getByRole('button', { name: '지금 업데이트', exact: true }).count(), 0);

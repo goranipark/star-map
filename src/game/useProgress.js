@@ -30,7 +30,10 @@ export function useProgress() {
           if (pending.current[0] === item) pending.current.shift();
         } catch (error) {
           success = false;
-          if (error instanceof store.ConstellationCapacityError) {
+          if (error instanceof store.ProgressResetError) {
+            setConflict(error.message);
+            if (pending.current[0] === item) pending.current.shift();
+          } else if (error instanceof store.ConstellationCapacityError) {
             outcome = 'conflict';
             setConflict(error.message);
             publish(store.loadProgress());
@@ -68,7 +71,7 @@ export function useProgress() {
   const setSettings = useCallback((patch) => apply((latest) => store.updateSettings(latest, patch)), [apply]);
   const reset = useCallback(() => {
     pending.current = [];
-    return apply(() => store.resetProgress());
+    return apply(() => store.resetProgress(), false);
   }, [apply]);
   const saveMyConstellation = useCallback((card, replaceId = null, chosenCard) => {
     const expected = chosenCard ?? progressRef.current.myConstellations.find((c) => c.id === (replaceId || card.id));

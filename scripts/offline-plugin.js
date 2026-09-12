@@ -15,7 +15,7 @@ export function offlinePlugin() {
         const entries = await readdir(folder, { withFileTypes: true });
         const nested = await Promise.all(entries.map((entry) => {
           const relative = `${prefix}${entry.name}`;
-          if (relative === 'art' || relative === 'sw.js') return [];
+          if (relative === 'sw.js') return [];
           return entry.isDirectory() ? files(path.join(folder, entry.name), `${relative}/`) : [relative];
         }));
         return nested.flat();
@@ -26,7 +26,7 @@ export function offlinePlugin() {
       for (const file of assets) hash.update(file).update(await readFile(path.join(output, file)));
       const version = hash.digest('hex').slice(0, 20);
       await writeFile(path.join(output, 'sw.js'),
-        `const VERSION = ${JSON.stringify(version)};\nconst PRECACHE = ${JSON.stringify(assets)};\n${template}`);
+        `const VERSION = ${JSON.stringify(version)};\nconst PRECACHE = ${JSON.stringify(assets.filter((file) => !file.startsWith('art/')))};\n${template}`);
     },
   };
 }

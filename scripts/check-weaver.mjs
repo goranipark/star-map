@@ -1,3 +1,4 @@
+import { browserOptions } from './browser-options.js';
 // Run against a production preview. PLAYWRIGHT_MODULE may point to a bundled installation.
 import assert from 'node:assert/strict';
 import { pathToFileURL } from 'node:url';
@@ -6,7 +7,7 @@ import { projectStar } from '../src/game/projection.js';
 
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE
   ? pathToFileURL(process.env.PLAYWRIGHT_MODULE).href : 'playwright');
-const browser = await chromium.launch({ headless: true, channel: 'msedge' });
+const browser = await chromium.launch(browserOptions);
 const full = process.env.WEAVER_FULL === '1';
 try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, serviceWorkers: 'block' });

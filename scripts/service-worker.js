@@ -54,7 +54,8 @@ async function respond(request) {
   const illustration = await art?.match(request);
   if (illustration) return illustration;
   try {
-    const response = await fetch(request);
+    // A new art cache must not be populated from an old HTTP-cache entry.
+    const response = await fetch(request, artRequest ? { cache: 'reload' } : undefined);
     if (art && response.ok) {
       try {
         await art.put(request, response.clone());

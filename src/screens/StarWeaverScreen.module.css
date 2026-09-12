@@ -233,7 +233,7 @@
 
 .epithetActions {
   display: flex;
- +  gap: var(--space-xs);
+  gap: var(--space-xs);
 }
 
 .moreEpithets {
@@ -252,7 +252,6 @@
 }
 
 .customEpithet {
-  display: flex: none;
   display: flex;
   flex-direction: column;
   gap: 4px;

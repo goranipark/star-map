@@ -164,11 +164,17 @@ export function updateSettings(progress, patch) {
 }
 
 /** 진행 상황을 모두 지운다(교실에서 다음 학생에게 넘길 때 사용). */
+export class ProgressResetError extends Error {
+  constructor() {
+    super('기록을 지우지 못했어요. 기존 기록은 그대로 있어요. 다시 시도해 주세요.');
+  }
+}
+
 export function resetProgress() {
   try {
     window.localStorage.removeItem(STORAGE_KEY);
   } catch {
-    /* 지우지 못해도 무시 */
+    throw new ProgressResetError();
   }
   return emptyProgress();
 }

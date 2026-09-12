@@ -10,6 +10,7 @@ npm run dev
 npm test
 npm run check:art
 npm run build
+npm run test:browser
 npm run preview
 ```
 
@@ -20,6 +21,10 @@ npm run preview
 ## 삽화
 
 ### 작품 편집·저장 회귀 검증
+
+`npm run test:browser`는 빌드된 `dist`를 전용 로컬 서버로 열고 입력·저장·초안·여러 탭·초기화 실패·오프라인 테스트를 차례로 실행한 뒤 서버를 종료합니다. Playwright는 개발 의존성으로 고정되어 있습니다. Linux CI는 `npx playwright install --with-deps chromium`으로 설치한 Chromium을 사용합니다. Windows는 기본 Edge를 사용하며 `BROWSER_CHANNEL=chromium`으로 Chromium을 선택할 수 있습니다.
+
+초기화 실패 시 기존 기록과 확인 화면을 유지하고 오류를 알립니다. 사용자가 다시 시도해 실제 삭제에 성공한 뒤 화면도 초기화합니다.
 
 작성 중인 성좌는 별도의 초안 저장소에 자동 저장됩니다. 도감 이동이나 새로고침 후 성좌 만들기를 다시 열면 선과 입력 내용이 복원됩니다. 다른 새 탭에서도 최근 초안을 이어 받을 수 있고 이후 편집은 탭별 저장 슬롯을 사용합니다. 작품 저장에 성공하면 해당 초안을 지웁니다. 저장공간 오류로 초안을 보관하지 못한 경우 화면에 실패를 알립니다.
 
@@ -49,8 +54,10 @@ HTML과 필수 자산은 해당 빌드 버전에 고정하며, 업데이트 안�
 
 삽화는 워커가 제어하는 동안 요청에 성공한 파일만 최대 40개 보관하며 버전 전환 시 비웁니다. 미방문 이야기 삽화는 오프라인에서 별자리 도형으로 대체됩니다. 최초 로딩에서 워커 제어 전에 요청한 삽화는 아직 캐시되지 않을 수 있습니다.
 
+삽화도 파일 내용과 경로를 버전 해시에 포함합니다. 따라서 같은 이름의 그림만 교체한 빌드도 새 워커가 만들어집니다. 삽화는 여전히 선캐시하지 않으며, 새 버전에서 처음 받을 때 HTTP 캐시도 갱신해 이전 그림이 남지 않도록 합니다.
+
 빌드 후 `node scripts/check-offline.mjs`로 임시 서버의 하위 경로에서 첫 설치 후 오프라인 실행, 사용자 승인 업데이트, 필수 파일 누락 시 이전 버전 복구를 검증합니다. 위와 같은 Playwright/Edge 환경을 사용합니다.
 
 ## GitHub Pages 배포
 
-저장소의 Actions 화면에서 `Deploy to GitHub Pages` 워크플로를 수동 실행합니다. 자동 테스트와 빌드가 성공한 경우에만 `dist`가 Pages에 배포됩니다. 저장소 Settings → Pages의 Source는 GitHub Actions로 설정해야 합니다.
+`main` 푸시와 PR에서 `Regression tests`가 단위 테스트·빌드·Chromium 회귀 검증을 실행합니다. 저장소의 Actions 화면에서 `Deploy to GitHub Pages` 워크플로를 수동 실행하면 같은 검증을 모두 통과한 경우에만 `dist`를 업로드하고 배포합니다. 저장소 Settings → Pages의 Source는 GitHub Actions로 설정해야 합니다.

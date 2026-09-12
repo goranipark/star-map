@@ -174,9 +174,8 @@ export default function AlmanacScreen({
               <button
                 type="button"
                 className={styles.danger}
-                onClick={() => {
-                  onReset?.();
-                  setConfirmingReset(false);
+                onClick={async () => {
+                  if (await onReset?.() === true) setConfirmingReset(false);
                 }}
               >
                 네, 지웁니다

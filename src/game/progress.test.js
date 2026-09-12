@@ -12,6 +12,7 @@ import {
   isStarWeavingUnlocked,
   isUsableMyConstellation,
   ProgressWriteError,
+  ProgressResetError,
   ConstellationCapacityError,
 } from './progress.js';
 
@@ -197,5 +198,19 @@ test('사용자 성좌 삭제와 전체 초기화가 저장소에도 반영된�
 
   const reset = resetProgress();
   assert.deepEqual(reset, empty());
+  assert.equal(storage.getItem(STORAGE_KEY), null);
+});
+
+test('초기화가 실패하면 기존 기록을 보존하고 실패를 전달한다', () => {
+  const storage = useStorage();
+  saveProgress({ ...empty(), completed: ['ursa-minor'], myConstellations: [mine(1)] });
+  const original = storage.getItem(STORAGE_KEY);
+  const remove = storage.removeItem.bind(storage);
+  storage.removeItem = () => { throw new Error('blocked'); };
+  assert.throws(resetProgress, ProgressResetError);
+  assert.equal(storage.getItem(STORAGE_KEY), original);
+  assert.deepEqual(loadProgress().completed, ['ursa-minor']);
+  storage.removeItem = remove;
+  assert.deepEqual(resetProgress(), empty());
   assert.equal(storage.getItem(STORAGE_KEY), null);
 });

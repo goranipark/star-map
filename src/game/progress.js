@@ -1,4 +1,5 @@
 import { constellations, getConstellation } from './constellations.js';
+import { DRAFT_STORAGE_PREFIX, PROGRESS_STORAGE_KEY } from './storageKeys.js';
 
 /**
  * 진행 상황 저장 — ToDo.md Phase 2.
@@ -26,7 +27,7 @@ import { constellations, getConstellation } from './constellations.js';
  * }
  */
 
-export const STORAGE_KEY = 'polaris-star-map/progress/v1';
+export const STORAGE_KEY = PROGRESS_STORAGE_KEY;
 
 const EMPTY = Object.freeze({
   version: 1,
@@ -171,9 +172,26 @@ export class ProgressResetError extends Error {
 }
 
 export function resetProgress() {
+  let storage;
+  let snapshot = [];
   try {
-    window.localStorage.removeItem(STORAGE_KEY);
+    storage = window.localStorage;
+    const targets = [];
+    for (let index = 0; index < storage.length; index++) {
+      const entry = storage.key(index);
+      if (entry?.startsWith(DRAFT_STORAGE_PREFIX)) targets.push(entry);
+    }
+    // 다른 탭이 중간 상태를 초기화로 오인하지 않도록 진행 기록 키는 마지막에 지운다.
+    targets.push(STORAGE_KEY);
+    snapshot = [...new Set(targets)]
+      .map((entry) => [entry, storage.getItem(entry)])
+      .filter(([, value]) => value !== null);
+    for (const entry of new Set(targets)) storage.removeItem(entry);
   } catch {
+    // 일부 키를 지운 뒤 실패해도 가능한 한 초기화 전 상태로 되돌린다.
+    for (const [entry, value] of snapshot) {
+      try { storage?.setItem(entry, value); } catch { /* 원래 오류를 전달한다 */ }
+    }
     throw new ProgressResetError();
   }
   return emptyProgress();

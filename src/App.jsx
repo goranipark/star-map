@@ -8,7 +8,7 @@ import {
   nextConstellation,
 } from './game/constellations.js';
 import { useProgress } from './game/useProgress.js';
-import { loadDraft, saveDraft } from './game/drafts.js';
+import { clearDraftMemory, loadDraft, saveDraft } from './game/drafts.js';
 import {
   disposeAudio,
   playFeedback,
@@ -65,6 +65,7 @@ export default function App() {
   const [reloadDeferred, setReloadDeferred] = useState(false);
   const [draft, setDraft] = useState(loadDraft);
   const [draftFailed, setDraftFailed] = useState(false);
+  const wasStarWeavingUnlocked = useRef(starWeavingUnlocked);
   const stateRef = useRef({});
   stateRef.current = { screen, saving, saveFailed, draftFailed };
   const updateDraft = useCallback((next) => {
@@ -74,6 +75,17 @@ export default function App() {
   const soundOn = progress.settings?.sound !== false;
 
   useEffect(() => setAudioEnabled(soundOn), [soundOn]);
+
+  useEffect(() => {
+    const wasUnlocked = wasStarWeavingUnlocked.current;
+    wasStarWeavingUnlocked.current = starWeavingUnlocked;
+    if (!wasUnlocked || starWeavingUnlocked) return;
+    // 다른 탭에서 전체 초기화해도 이 탭의 메모리 초안과 편집 화면을 남기지 않는다.
+    clearDraftMemory();
+    setDraft(null);
+    setDraftFailed(false);
+    if (screen === SCREEN.STAR_WEAVER) setScreen(SCREEN.ALMANAC);
+  }, [screen, starWeavingUnlocked]);
 
   useEffect(() => {
     const unlock = () => unlockAudio();
@@ -144,6 +156,9 @@ export default function App() {
 
   const handleReset = useCallback(async () => {
     if (await reset() !== true) return false;
+    clearDraftMemory();
+    setDraft(null);
+    setDraftFailed(false);
     setCurrentId(constellations[0].id);
     setReplaying(false);
     return true;

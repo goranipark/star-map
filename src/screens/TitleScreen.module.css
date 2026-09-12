@@ -1,4 +1,4 @@
-.wrap { height:100%; overflow-y:auto; background:#080f1c; color:#f1e6d0; }
+.wrap { height:100%; overflow-x:hidden; overflow-y:auto; background:#080f1c; color:#f1e6d0; }
 .cover { position:relative; min-height:100%; display:grid; grid-template-columns:46% 54%; max-width:1800px; margin:auto; }
 .cover::after { content:''; position:absolute; inset:20px; border:1px solid #c4a66d55; pointer-events:none; z-index:2; }
 .art { grid-column:2; grid-row:1; position:relative; min-height:760px; overflow:hidden; }

@@ -30,6 +30,8 @@ jobs:
         run: npm ci
       - name: Test
         run: npm test
+      - name: Check art
+        run: npm run check:art
       - name: Build
         run: npm run build
       - name: Install browser

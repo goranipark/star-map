@@ -1,9 +1,10 @@
 import { allSkyStars } from './sky.js';
 import { lineKey } from './constellations.js';
 import { isUsableMyConstellation } from './progress.js';
+import { DRAFT_STORAGE_PREFIX, DRAFT_TAB_STORAGE_KEY } from './storageKeys.js';
 
-const PREFIX = 'polaris-star-map/draft/v1/';
-const TAB_KEY = 'polaris-star-map/draft-tab';
+const PREFIX = DRAFT_STORAGE_PREFIX;
+const TAB_KEY = DRAFT_TAB_STORAGE_KEY;
 const ids = new Set(allSkyStars.map((star) => star.id));
 let activeKey;
 let memory = null;
@@ -64,4 +65,11 @@ export function saveDraft(draft) {
     }
     return true;
   } catch { return false; }
+}
+
+/** 전체 초기화가 끝난 뒤 현재 탭에 남은 초안 참조도 버린다. */
+export function clearDraftMemory() {
+  activeKey = undefined;
+  memory = null;
+  try { sessionStorage.removeItem(TAB_KEY); } catch { /* 다음 키는 메모리에서 새로 만든다 */ }
 }

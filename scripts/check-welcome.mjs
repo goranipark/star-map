@@ -38,12 +38,20 @@ try {
   const horizontallyScrollable = layout.scrollWidth > layout.clientWidth
     && !['hidden', 'clip'].includes(layout.overflowX);
   assert.equal(horizontallyScrollable, false, `모바일 가로 스크롤 없음: ${JSON.stringify(layout)}`);
+  // 휴대폰에서 시작 버튼이 첫 화면 안에 보여야 한다.
+  // 스크롤해야 나오면 처음 온 아이는 표지 그림만 보고 멈춘다.
   const skip = page.getByRole('button', { name: '대화 건너뛰고 별 잇기' });
-  await skip.scrollIntoViewIfNeeded();
+  for (const [name, button] of [['시작', page.getByRole('button', { name: '반가워!', exact: true })], ['건너뛰기', skip]]) {
+    const { bottom, fold } = await button.evaluate((node) => ({
+      bottom: node.getBoundingClientRect().bottom, fold: window.innerHeight,
+    }));
+    assert.equal(bottom <= fold, true, `${name} 버튼이 첫 화면 안에 있다 (아래끝 ${Math.round(bottom)} / 화면 ${fold})`);
+  }
+
   await skip.click();
   await page.getByRole('application').waitFor();
   assert.deepEqual(errors, []);
-  console.log('PASS: 시작 대화·퍼즐 진입·건너뛰기, 모바일 가로 넘침, 페이지 오류 없음');
+  console.log('PASS: 시작 대화·퍼즐 진입·건너뛰기, 모바일 가로 넘침·첫 화면 버튼, 페이지 오류 없음');
 } finally {
   await browser.close();
 }

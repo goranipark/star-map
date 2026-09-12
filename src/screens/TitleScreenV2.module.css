@@ -245,3 +245,34 @@
  .title { font-size:clamp(30px,8vw,40px); }
  .chapter { font-size:13px; }
 }
+
+/* 휴대폰에서는 표지 그림과 "별 잇기" 버튼이 한 화면에 함께 들어온다.
+   그림이 화면을 다 채우면 처음 온 아이는 그림만 보고 멈춘다 — 시작 버튼이
+   접힌 자리 아래에 있다는 것을 모르기 때문이다. 그래서 그림 높이를 화면 높이에
+   묶고(그림 비율 2:3이라 너비의 1.5배가 높이다), 글 사이 여백을 조금씩 줄인다. */
+@media (max-width:760px) {
+  .cover { min-height:100dvh; justify-content:center; }
+  .art { max-width:min(440px, 100%, 25dvh); }
+  .story { padding-block:12px; }
+  .ornament { margin-block:12px; }
+  .words { min-height:104px; }
+  .dots { margin-top:10px; }
+  .actions { margin-top:14px; }
+  .content { padding-bottom:20px; }
+}
+
+/* 세로가 짧은 휴대폰(가로로 눕힌 화면 포함)에서는 그림을 더 줄인다. */
+@media (max-width:760px) and (max-height:800px) {
+  .art { max-width:min(440px, 100%, 22dvh); }
+  .words { min-height:92px; }
+}
+
+/* 360×640처럼 작은 구형 기기에서는 장식(가로줄 문양)까지 접어 자리를 만든다.
+   시작 버튼을 화면 안에 넣는 것이 장식보다 먼저다. */
+@media (max-width:760px) and (max-height:680px) {
+  .art { max-width:min(440px, 100%, 20dvh); }
+  .ornament { display:none; }
+  .chapter { margin-bottom:8px; }
+  .story { padding-block:6px; }
+  .words { min-height:86px; }
+}

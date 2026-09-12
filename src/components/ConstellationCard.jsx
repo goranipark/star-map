@@ -47,27 +47,47 @@ export default function ConstellationCard({
       disabled={locked && onClick ? true : undefined}
       type={onClick ? 'button' : undefined}
     >
-      {/* 별자리 그림 */}
+      {/*
+        별자리 그림.
+
+        아직 잇지 않은 별자리는 모양을 보여 주지 않는다 — 그 모양이 곧 퍼즐의 답이라,
+        도감에서 미리 보면 별을 이어 보며 찾아내는 재미가 사라진다.
+        대신 물음표를 놓아 "여기 아직 만나지 않은 별자리가 있다"는 것만 알린다.
+      */}
       <svg className={styles.figure} viewBox="0 0 100 100" aria-hidden="true">
-        {constellation.lines.map(([a, b]) => (
-          <line
-            key={`${a}-${b}`}
-            x1={byId[a].x}
-            y1={byId[a].y}
-            x2={byId[b].x}
-            y2={byId[b].y}
-            className={styles.line}
-          />
-        ))}
-        {stars.map((s) => (
-          <circle
-            key={s.id}
-            cx={s.x}
-            cy={s.y}
-            r={radiusForMagnitude(s.mag, { min: 1.2, max: 2.6 })}
-            className={s.isPolaris ? styles.polaris : styles.star}
-          />
-        ))}
+        {locked ? (
+          <text
+            x="50"
+            y="50"
+            className={styles.unknown}
+            textAnchor="middle"
+            dominantBaseline="central"
+          >
+            ?
+          </text>
+        ) : (
+          <>
+            {constellation.lines.map(([a, b]) => (
+              <line
+                key={`${a}-${b}`}
+                x1={byId[a].x}
+                y1={byId[a].y}
+                x2={byId[b].x}
+                y2={byId[b].y}
+                className={styles.line}
+              />
+            ))}
+            {stars.map((s) => (
+              <circle
+                key={s.id}
+                cx={s.x}
+                cy={s.y}
+                r={radiusForMagnitude(s.mag, { min: 1.2, max: 2.6 })}
+                className={s.isPolaris ? styles.polaris : styles.star}
+              />
+            ))}
+          </>
+        )}
       </svg>
 
       <div className={styles.text}>

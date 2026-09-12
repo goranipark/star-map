@@ -287,7 +287,11 @@ export default function ConstellationBoard({
           solvedRef.current = true;
           onSolvedRef.current?.();
         }
-        onFeedbackRef.current?.('correct');
+        onFeedbackRef.current?.('correct', {
+          connected: next.size,
+          total: answers.size,
+          mode,
+        });
         return;
       }
 

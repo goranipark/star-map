@@ -88,6 +88,10 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
+/** 카드에 쓰는 글꼴. 둘 다 public/fonts/ 에 함께 배포한다. */
+const DISPLAY_FONT = '"BMDoHyeon", "Baloo 2", sans-serif';
+const BODY_FONT = '"Pretendard", system-ui, sans-serif';
+
 /**
  * 성좌 카드를 캔버스에 그린다.
  * @param {object} constellation constellations.json의 별자리 한 칸과 같은 모양
@@ -97,8 +101,8 @@ export function drawCard(canvas, constellation) {
   canvas.width = W;
   canvas.height = H;
 
-  const display = '"BMDoHyeon", "Baloo 2", sans-serif';
-  const body = '"Pretendard", system-ui, sans-serif';
+  const display = DISPLAY_FONT;
+  const body = BODY_FONT;
 
   // ---------- 배경 ----------
   ctx.fillStyle = COLORS.bg;
@@ -220,16 +224,31 @@ export function safeFileName(name) {
 }
 
 /**
+ * 카드에 쓰는 글꼴을 실제로 내려받아 둔다.
+ *
+ * `document.fonts.ready`만 기다리면 부족하다. 그것은 **화면에 이미 쓰이고 있는**
+ * 글꼴만 기다리는데, 카드 이름에 쓰는 BMDoHyeon은 화면 어디에도 쓰이지 않아
+ * 그때까지 내려받지 않은 상태다. 그대로 그리면 캔버스는 조용히 기본 글꼴로
+ * 대체해 버리고, 기기마다 다른 카드가 저장된다.
+ */
+async function loadCardFonts() {
+  try {
+    await Promise.all([
+      document.fonts?.load(`400 72px ${DISPLAY_FONT}`),
+      document.fonts?.load(`400 40px ${BODY_FONT}`),
+    ]);
+    await document.fonts?.ready;
+  } catch {
+    /* 글꼴을 못 받아도 그리기는 계속한다 */
+  }
+}
+
+/**
  * 성좌 카드를 PNG 파일로 내려받는다.
  * @returns {Promise<boolean>} 저장이 시작되었으면 true
  */
 export async function downloadCardImage(constellation) {
-  // 글꼴이 다 준비된 뒤에 그려야 글자가 기본 글꼴로 나오지 않는다.
-  try {
-    await document.fonts?.ready;
-  } catch {
-    /* 글꼴을 기다리지 못해도 그리기는 계속한다 */
-  }
+  await loadCardFonts();
 
   const canvas = document.createElement('canvas');
   drawCard(canvas, constellation);

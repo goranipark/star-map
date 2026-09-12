@@ -48,12 +48,38 @@
   color: var(--gold);
 }
 
+/*
+  이야기 글의 줄 간격 원칙
+  ─────────────────────────────────────────────────────────────
+  · 한 줄 안에서(저절로 접힌 줄)는 1.75로 붙여 한 문장으로 읽히게 한다.
+  · 대본이 일부러 나눈 줄 사이에는 그보다 넓은 간격(space-sm)을 준다.
+  이 두 간격이 같으면 네 줄이 전부 따로 노는 글처럼 보인다.
+*/
 .text {
   /* 한 컷당 1~2문장 (design.md 8장) — 크고 넉넉하게 */
-  font-size: 20px;
-  line-height: 1.9;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
   color: var(--text-primary);
-  white-space: pre-line;
+}
+
+.line {
+  font-size: 20px;
+  line-height: 1.75;
+  /* 한글 본문은 자간을 아주 조금 좁혀야 낱글자가 흩어져 보이지 않는다 */
+  letter-spacing: -0.015em;
+  /* 마지막 줄에 한두 글자만 남는 것을 브라우저가 알아서 피해 준다 */
+  text-wrap: pretty;
+}
+
+/* 이야기 제목 — 본문보다 작지만 eyebrow처럼 묻히지는 않게 */
+.storyTitle {
+  font-family: var(--font-display);
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  color: var(--gold);
+  opacity: 0.85;
 }
 
 /* ---------------- 삽화 자리 ---------------- */
@@ -190,7 +216,7 @@
     width: min(100%, 58vh, 420px);
   }
 
-  .text {
+  .line {
     font-size: 18px;
   }
 }
@@ -206,9 +232,13 @@
     width: min(100%, 42vh);
   }
 
-  .text {
+  .line {
     font-size: 16px;
     line-height: 1.7;
+  }
+
+  .text {
+    gap: var(--space-xs);
   }
 
   .controls {
@@ -224,6 +254,6 @@
 
 
 .slide { background:linear-gradient(135deg,#193542ed,#0d1e2bf5); border-color:#d9bd8055; box-shadow:0 20px 60px #030d1833; }
-.text { font-family:var(--font-display); color:#f1e6d0; word-break:keep-all; }
+.line { font-family:var(--font-display); color:#f1e6d0; word-break:keep-all; }
 .title { letter-spacing:.025em; }
 .figureBox { border-color:#d9bd8055; }

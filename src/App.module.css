@@ -39,7 +39,9 @@
 
 /* The same celestial world continues beyond the invitation. */
 .journey {
-  --font-display:'Nanum Myeongjo','나눔명조','Batang','바탕',serif;
+  /* 명조 계열이 없는 기기에서는 함께 배포한 Pretendard로 떨어지게 한다
+     (크롬북·아이패드·안드로이드 태블릿에는 바탕·나눔명조가 없다) */
+  --font-display:'Nanum Myeongjo','나눔명조','Batang','바탕','Pretendard',system-ui,serif;
   --bg-field:#112735;
   --hairline:rgba(223,195,139,.22);
   --hairline-strong:rgba(223,195,139,.42);

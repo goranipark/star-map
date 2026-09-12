@@ -66,11 +66,10 @@ export default function StorySlides({ constellation, onFinish, finishLabel = '�
           <div className={styles.body}>
             <p className="eyebrow">STORY</p>
             <h2 className={styles.title}>{constellation.name}</h2>
-            <p className={styles.text}>
-              이 별자리의 이야기는 아직 준비 중이에요.
-              <br />
-              곧 들려드릴게요.
-            </p>
+            <div className={styles.text}>
+              <p className={styles.line}>이 별자리의 이야기는 아직 준비 중이에요.</p>
+              <p className={styles.line}>곧 들려드릴게요.</p>
+            </div>
           </div>
         </article>
         <div className={styles.controls}>
@@ -115,8 +114,18 @@ export default function StorySlides({ constellation, onFinish, finishLabel = '�
         </div>
 
         <div className={styles.body}>
-          <p className="eyebrow">{constellation.story.title ?? constellation.name}</p>
-          <p className={styles.text}>{slide.text}</p>
+          <p className={styles.storyTitle}>{constellation.story.title ?? constellation.name}</p>
+          <div className={styles.text}>
+            {/*
+              대본에 적힌 줄바꿈은 "여기서 한 호흡 쉰다"는 뜻이다.
+              한 줄씩 문단으로 나눠야, 줄이 길어 저절로 접힌 줄과
+              글쓴이가 일부러 나눈 줄을 아이가 눈으로 구분할 수 있다.
+              (한 덩어리에 pre-line만 주면 둘의 간격이 같아 문장이 뭉개진다)
+            */}
+            {splitLines(slide.text).map((line, i) => (
+              <p key={i} className={styles.line}>{line}</p>
+            ))}
+          </div>
         </div>
 
         {tuning && (
@@ -333,6 +342,14 @@ function Glint({ x, y, mag, gold, haloId, faded, size = 1 }) {
       <circle r={core} className={gold ? styles.coreGold : styles.core} />
     </g>
   );
+}
+
+/** 대본 한 컷을 줄 단위 문단으로 나눈다. 빈 줄은 버린다. */
+function splitLines(text) {
+  return String(text ?? '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
 }
 
 /** 삽화로 받아들이는 파일 형식. 앞에서부터 차례로 찾아본다. */

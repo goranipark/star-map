@@ -10,8 +10,25 @@ const browser = await chromium.launch(browserOptions);
 const url = process.env.PREVIEW_URL ?? 'http://127.0.0.1:4173';
 const key = 'polaris-star-map/progress/v1';
 const c = constellations[0];
+/**
+ * 판이 스스로 잰 크기를 그대로 읽는다.
+ *
+ * 판은 ResizeObserver의 contentRect(테두리를 뺀 안쪽 크기)로 화면 비율을 재는데,
+ * boundingBox()는 테두리까지 포함한 바깥 크기다. 1280×900처럼 비율이 판정 기준(80)
+ * 바로 위아래인 화면에서는 이 1~2px 차이 때문에 판과 검사가 서로 다른 회전각을 골라,
+ * 별을 눌러도 아무 데도 맞지 않는 헛검사가 된다.
+ */
+async function boardContentRect(page) {
+  return page.getByRole('application').evaluate((svg) => new Promise((resolve) => {
+    const observer = new ResizeObserver(([entry]) => {
+      observer.disconnect();
+      resolve({ width: entry.contentRect.width, height: entry.contentRect.height });
+    });
+    observer.observe(svg);
+  }));
+}
 async function connect(page, lines, free = false) {
-  const box = await page.getByRole('application').boundingBox();
+  const box = await boardContentRect(page);
   const rotation = free ? 0 : focusRotation(c, 100 * box.height / box.width < 80 ? 270 : 180);
   const points = Object.fromEntries(c.stars.map((s) => [s.id, projectStar(s.ra, s.dec, rotation)]));
   await page.getByRole('application').evaluate((svg, { lines, points }) => {
@@ -19,7 +36,7 @@ async function connect(page, lines, free = false) {
     for (const pair of lines) {
       for (const id of pair) {
         const at = points[id];
-        const p = new DOMPoint(at.x, at.y).matrixTransform(svg.firstElementChild.getScreenCTM());
+        const p = new DOMPoint(at.x, at.y).matrixTransform(svg.querySelector('g[transform]').getScreenCTM());
         for (const type of ['pointerdown', 'pointerup']) svg.dispatchEvent(new PointerEvent(type, {
           bubbles: true, pointerId, pointerType: 'touch', isPrimary: true, button: 0,
           clientX: p.x, clientY: p.y,
@@ -28,6 +45,19 @@ async function connect(page, lines, free = false) {
       }
     }
   }, { lines, points });
+}
+/**
+ * 퍼즐판이 자리를 다 잡을 때까지 기다린다.
+ *
+ * 판은 ResizeObserver로 제 크기를 잰 다음에야 화면 비율에 맞는 회전각을 고른다.
+ * 재기 전에 별을 누르면 이 파일이 계산한 좌표와 실제 별 자리가 어긋나 헛손질이 된다.
+ * '별자리 맞춤'이 눌린 상태가 되는 것은 전체 하늘 → 별자리 확대가 끝났다는 뜻이라,
+ * 그 시점이면 크기 재기도 반드시 끝나 있다.
+ */
+async function waitForBoard(page) {
+  await page.getByRole('application').waitFor();
+  await page.getByRole('button', { name: '별자리 맞춤', exact: true })
+    .and(page.locator('[aria-pressed="true"]')).waitFor();
 }
 async function enterWeaver(page) {
   await page.getByRole('button', { name: /나의 밤하늘 도감/ }).click();
@@ -41,7 +71,7 @@ try {
   await b.goto(url);
   await b.getByRole('button', { name: /나의 밤하늘 도감/ }).click();
   await a.getByRole('button', { name: '대화 건너뛰고 별 잇기' }).click();
-  await a.getByRole('application').waitFor();
+  await waitForBoard(a);
   await Promise.all([
     connect(a, c.lines),
     b.getByRole('button', { name: '소리 끄기', exact: true }).click(),

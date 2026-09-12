@@ -28,7 +28,7 @@ try {
   async function tap(star) {
     const point = projectStar(star.ra, star.dec);
     const screen = await page.getByRole('application').evaluate((svg, p) => {
-      const result = new DOMPoint(p.x, p.y).matrixTransform(svg.firstElementChild.getScreenCTM());
+      const result = new DOMPoint(p.x, p.y).matrixTransform(svg.querySelector('g[transform]').getScreenCTM());
       return { x: result.x, y: result.y };
     }, point);
     await page.mouse.click(screen.x, screen.y);
@@ -36,12 +36,21 @@ try {
   const [a, b, c] = constellations[0].stars;
   async function pointer(type, star, pointerId = 101, isPrimary = true) {
     await page.getByRole('application').evaluate((svg, { type, point, pointerId, isPrimary }) => {
-      const p = new DOMPoint(point.x, point.y).matrixTransform(svg.firstElementChild.getScreenCTM());
+      const p = new DOMPoint(point.x, point.y).matrixTransform(svg.querySelector('g[transform]').getScreenCTM());
       svg.dispatchEvent(new PointerEvent(type, { bubbles: true, pointerId, isPrimary,
         pointerType: 'touch', button: 0, clientX: p.x, clientY: p.y }));
     }, { type, point: projectStar(star.ra, star.dec), pointerId, isPrimary });
   }
   const lineCount = () => page.locator('line[class*="drawnLine"]').count();
+  // React가 다시 그릴 때까지 기다린다. isEnabled()는 한 번만 보고 끝나므로
+  // 그대로 쓰면 도감이 꽉 찬 경우처럼 다시 그리기가 느릴 때 헛되이 실패한다.
+  async function expectEnabled(locator, enabled, message) {
+    for (let i = 0; i < 50; i += 1) {
+      if (await locator.isEnabled() === enabled) return;
+      await page.waitForTimeout(100);
+    }
+    assert.fail(message);
+  }
   await pointer('pointerdown', a);
   await pointer('pointerdown', c, 102, false);
   await pointer('pointermove', a, 102, false);
@@ -69,13 +78,13 @@ try {
   assert.equal(await lineCount(), 0, '창 포커스를 잃으면 연결 취소');
   await tap(a); await tap(b); await tap(b); await tap(c);
   const next = page.getByRole('button', { name: '다음', exact: true });
-  assert.equal(await next.isEnabled(), true);
+  await expectEnabled(next, true, '선 두 개를 이으면 다음으로 넘어갈 수 있다');
   await next.click();
   await page.getByRole('button', { name: '별 다시 잇기' }).click();
-  assert.equal(await next.isEnabled(), true, '단계 왕복 후에도 두 선 유지');
+  await expectEnabled(next, true, '단계 왕복 후에도 두 선 유지');
   // Repeating an existing edge must delete it, proving the board retained its state.
   await tap(a); await tap(b);
-  assert.equal(await next.isEnabled(), false);
+  await expectEnabled(next, false, '이미 이은 선을 다시 이으면 지워진다');
   await tap(a); await tap(b);
   await next.click();
   await page.getByRole('button', { name: '골라 줘' }).click();

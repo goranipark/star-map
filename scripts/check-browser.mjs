@@ -15,6 +15,7 @@ try {
   if (!ready) throw new Error('Preview did not become ready');
   for (const [script, env] of [
     ['check-welcome.mjs', {}],
+    ['check-local-sky.mjs', {}],
     ['check-weaver.mjs', { WEAVER_FULL: '0' }],
     ['check-weaver.mjs', { WEAVER_FULL: '1' }],
     ['check-preservation.mjs', {}],

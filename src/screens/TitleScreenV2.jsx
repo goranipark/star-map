@@ -2,7 +2,7 @@ import { useState } from 'react';
 import BackgroundStars from '../components/BackgroundStars.jsx';
 import styles from './TitleScreenV2.module.css';
 
-export default function TitleScreenV2({ onStart, onOpenAlmanac, completedCount = 0 }) {
+export default function TitleScreenV2({ onStart, onOpenAlmanac, onOpenLocalSky, completedCount = 0 }) {
   const [step, setStep] = useState(0);
   const returning = completedCount > 0;
   const dialogue = [
@@ -51,6 +51,7 @@ export default function TitleScreenV2({ onStart, onOpenAlmanac, completedCount =
               <button type="button" className={styles.start} onClick={() => step < dialogue.length - 1 ? setStep(step + 1) : onStart()}><span aria-hidden="true">✧</span>{current.reply}<span aria-hidden="true">→</span></button>
               {step < dialogue.length - 1 && <button type="button" className={styles.skip} onClick={onStart}>대화 건너뛰고 별 잇기</button>}
               <button type="button" className={styles.almanac} onClick={onOpenAlmanac}>나의 밤하늘 도감 <span aria-hidden="true">↗</span></button>
+              <button type="button" className={styles.localSky} onClick={onOpenLocalSky}>우리 지역 밤하늘 <span aria-hidden="true">↗</span></button>
             </div>
             {completedCount > 0 && <p className={styles.saved}>지금까지 {completedCount}개의 별자리를 만났어요</p>}
           </div>

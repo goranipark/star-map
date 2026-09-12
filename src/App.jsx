@@ -23,6 +23,7 @@ import PuzzleScreen from './screens/PuzzleScreen.jsx';
 import StoryScreen from './screens/StoryScreen.jsx';
 import AlmanacScreen from './screens/AlmanacScreen.jsx';
 import StarWeaverScreen from './screens/StarWeaverScreen.jsx';
+import LocalSkyScreen from './screens/LocalSkyScreen.jsx';
 import UpdateBanner from './components/UpdateBanner.jsx';
 import {
   activateWaitingWorker,
@@ -35,6 +36,7 @@ const SCREEN_TITLE = {
   [SCREEN.STORY]: '별자리 이야기',
   [SCREEN.ALMANAC]: '나의 밤하늘 도감',
   [SCREEN.STAR_WEAVER]: '나만의 성좌 만들기',
+  [SCREEN.LOCAL_SKY]: '우리 지역 밤하늘',
 };
 
 export default function App() {
@@ -206,6 +208,7 @@ export default function App() {
           <TitleScreen
             onStart={startPlaying}
             onOpenAlmanac={() => go(SCREEN.ALMANAC)}
+            onOpenLocalSky={() => go(SCREEN.LOCAL_SKY)}
             completedCount={completedIds.length}
           />
         )}
@@ -255,6 +258,8 @@ export default function App() {
             onFeedback={playFeedback}
           />
         )}
+
+        {screen === SCREEN.LOCAL_SKY && <LocalSkyScreen />}
       </main>
 
       {(updateRegistration || reloadDeferred) && screen !== SCREEN.STAR_WEAVER

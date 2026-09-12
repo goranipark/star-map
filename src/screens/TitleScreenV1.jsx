@@ -6,7 +6,7 @@ import StarGlyph from '../components/StarGlyph.jsx';
  * concept.md 2장: 북극성이 화면 중앙에 고정되고 별자리가 그 주위를 돈다는
  * 게임의 핵심 컨셉을 첫 화면에서 바로 보여준다.
  */
-export default function TitleScreenV1({ onStart, onOpenAlmanac, completedCount = 0 }) {
+export default function TitleScreenV1({ onStart, onOpenAlmanac, onOpenLocalSky, completedCount = 0 }) {
   const inProgress = completedCount > 0;
   return (
     <section className={styles.wrap}>
@@ -39,6 +39,9 @@ export default function TitleScreenV1({ onStart, onOpenAlmanac, completedCount =
         </button>
         <button type="button" className="btnGhost" onClick={onOpenAlmanac}>
           나의 밤하늘 도감
+        </button>
+        <button type="button" className="btnGhost" onClick={onOpenLocalSky}>
+          우리 지역 밤하늘
         </button>
       </div>
     </section>

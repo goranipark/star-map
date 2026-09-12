@@ -11,5 +11,6 @@ export const SCREEN = {
   STORY: 'story', // 신화 이야기 슬라이드
   ALMANAC: 'almanac', // 나의 밤하늘 도감
   STAR_WEAVER: 'star-weaver', // 나만의 성좌 만들기 (도감 5장 완성 후 해금)
+  LOCAL_SKY: 'local-sky', // 지역·시각에 따른 실제 북쪽 밤하늘
 };
 

@@ -20,8 +20,9 @@
 .start { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 22px; background:linear-gradient(110deg,#efd9a9,#cba765); color:#252116; border:1px solid #f4dfb5; border-radius:3px; font-size:16px; font-weight:650; box-shadow:0 0 28px #dab77315; transition:filter .2s,transform .2s; }
 .start:hover { filter:brightness(1.12); transform:translateY(-2px); }
 .almanac { color:#c5b796; font-size:13px; }
-.almanac span { margin-left:9px; }
-.almanac:hover { color:#ffe5ae; }
+.localSky { color:#9fc5c9; font-size:13px; }
+.almanac span,.localSky span { margin-left:9px; }
+.almanac:hover,.localSky:hover { color:#ffe5ae; }
 .saved { color:#b7a681; font-size:12px; margin-top:10px; }
 .footer { color:#74808f; font-size:10px; letter-spacing:.06em; }
 @media(min-width:1600px) { .art { min-height:900px; } }

@@ -137,44 +137,88 @@
   color: var(--gold);
 }
 
-.epithets {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  max-height: 210px;
-  overflow-y: auto;
-  padding: var(--space-sm);
+.epithetPicker {
+  width: 100%;
+  overflow: hidden;
   border: 1px solid var(--hairline);
   border-radius: var(--radius-button);
   background: rgba(8, 15, 28, 0.45);
 }
 
-.epithetGroup {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
+.selectedEpithet {
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  padding: var(--space-sm) var(--space-md);
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 15px;
+  text-align: center;
+  border-bottom: 1px solid var(--hairline);
+  background: linear-gradient(90deg, transparent, rgba(232, 193, 88, 0.09), transparent);
 }
 
-.groupLabel {
+.epithetTabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  padding: var(--space-xs);
+  background: rgba(232, 193, 88, 0.04);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.epithetTab {
+  min-height: 38px;
+  padding: 6px 4px;
+  border-radius: 7px;
+  color: var(--text-muted);
+  font-size: 12px;
+  border: 1px solid transparent;
+  transition: color 160ms var(--ease-soft), border-color 160ms var(--ease-soft), background 160ms var(--ease-soft);
+}
+
+.epithetTab:hover {
+  color: var(--text-primary);
+  border-color: var(--hairline);
+}
+
+.epithetTabOn {
+  color: var(--gold);
+  border-color: rgba(232, 193, 88, 0.5);
+  background: var(--gold-soft);
+}
+
+.epithetOptions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+}
+
+.groupDescription {
   font-size: 11px;
   letter-spacing: 0.1em;
   color: var(--text-muted);
+  text-align: center;
 }
 
 .chips {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-xs);
 }
 
 .chip {
-  min-height: 0;
-  padding: var(--space-xs) var(--space-sm);
+  min-height: 42px;
+  padding: 7px var(--space-xs);
   font-size: 12px;
-  border-radius: var(--radius-round);
+  line-height: 1.35;
+  text-align: center;
+  border-radius: 9px;
   border: 1px solid var(--hairline);
   color: var(--text-primary);
-  transition: border-color 160ms var(--ease-soft), color 160ms var(--ease-soft);
+  background: rgba(255, 255, 255, 0.015);
+  transition: border-color 160ms var(--ease-soft), color 160ms var(--ease-soft), background 160ms var(--ease-soft);
 }
 
 .chip:hover {
@@ -185,6 +229,39 @@
   border-color: var(--gold);
   color: var(--gold);
   background: var(--gold-soft);
+}
+
+.epithetActions {
+  display: flex;
+ +  gap: var(--space-xs);
+}
+
+.moreEpithets {
+  flex: 1 1 0;
+  min-height: 36px;
+  padding: 5px var(--space-xs);
+  color: var(--text-muted);
+  font-size: 11px;
+  border: 1px dashed var(--hairline);
+  border-radius: 8px;
+}
+
+.moreEpithets:hover {
+  color: var(--gold);
+  border-color: rgba(232, 193, 88, 0.5);
+}
+
+.customEpithet {
+  display: flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: customEpithetIn 180ms var(--ease-soft) both;
+}
+
+@keyframes customEpithetIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: none; }
 }
 
 /* ---------------- 버튼 ---------------- */

@@ -4,7 +4,11 @@ import styles from './StarWeaverScreen.module.css';
 import ConstellationBoard from '../components/ConstellationBoard.jsx';
 import ConstellationCard from '../components/ConstellationCard.jsx';
 import { allSkyStars } from '../game/sky.js';
-import { EPITHET_GROUPS, randomEpithet } from '../game/epithets.js';
+import {
+  EPITHET_GROUPS,
+  epithetGroupFor,
+  randomEpithet,
+} from '../game/epithets.js';
 import { downloadCardImage } from '../game/cardImage.js';
 import { MAX_MY_CONSTELLATIONS } from '../game/progress.js';
 
@@ -14,6 +18,8 @@ const MIN_LINES = 2;
 const NAME_MAX = 14;
 const POWER_MAX = 45;
 const AUTHOR_MAX = 10;
+const CUSTOM_EPITHET_MAX = 24;
+const EPITHETS_AT_FIRST = 8;
 
 /**
  * 나만의 성좌 만들기 (ToDo.md Phase 4-B).
@@ -33,6 +39,19 @@ export default function StarWeaverScreen({ onSave, onExit, onFeedback, myConstel
   const [clearToken, setClearToken] = useState(0);
 
   const [epithet, setEpithet] = useState(draft?.epithet ?? '');
+  const draftEpithetGroup = epithetGroupFor(draft?.epithet);
+  const [activeEpithetGroupId, setActiveEpithetGroupId] = useState(
+    draftEpithetGroup?.id ?? EPITHET_GROUPS[0].id
+  );
+  const [showAllEpithets, setShowAllEpithets] = useState(
+    () => Boolean(draftEpithetGroup && draftEpithetGroup.items.indexOf(draft?.epithet) >= EPITHETS_AT_FIRST)
+  );
+  const [editingCustomEpithet, setEditingCustomEpithet] = useState(
+    () => Boolean(draft?.epithet && !draftEpithetGroup)
+  );
+  const [customEpithet, setCustomEpithet] = useState(
+    () => draft?.epithet && !draftEpithetGroup ? draft.epithet : ''
+  );
   const [name, setName] = useState(draft?.name ?? '');
   const [power, setPower] = useState(draft?.power ?? '');
   const [author, setAuthor] = useState(draft?.author ?? '');
@@ -90,6 +109,23 @@ export default function StarWeaverScreen({ onSave, onExit, onFeedback, myConstel
 
   const enoughLines = lines.length >= MIN_LINES;
   const cardReady = Boolean(epithet && name.trim() && power.trim());
+  const activeEpithetGroup = EPITHET_GROUPS.find(
+    (group) => group.id === activeEpithetGroupId
+  ) ?? EPITHET_GROUPS[0];
+  const visibleEpithets = showAllEpithets
+    ? activeEpithetGroup.items
+    : activeEpithetGroup.items.slice(0, EPITHETS_AT_FIRST);
+
+  const chooseRandomEpithet = () => {
+    const chosen = randomEpithet(epithet);
+    const group = epithetGroupFor(chosen);
+    setEpithet(chosen);
+    setEditingCustomEpithet(false);
+    if (group) {
+      setActiveEpithetGroupId(group.id);
+      setShowAllEpithets(group.items.indexOf(chosen) >= EPITHETS_AT_FIRST);
+    }
+  };
 
   const handleSave = async () => {
     if (isSaving) return;
@@ -193,28 +229,94 @@ export default function StarWeaverScreen({ onSave, onExit, onFeedback, myConstel
             <div className={styles.field}>
               <span className={styles.fieldLabel}>
                 칭호 — 어떤 성좌인가요?
-                <button type="button" className={styles.pickBtn} onClick={() => setEpithet(randomEpithet())}>
-                  골라 줘
+                <button type="button" className={styles.pickBtn} onClick={chooseRandomEpithet}>
+                  {epithet ? '다시 골라 줘' : '골라 줘'}
                 </button>
               </span>
-              <div className={styles.epithets}>
-                {EPITHET_GROUPS.map((group) => (
-                  <div key={group.label} className={styles.epithetGroup}>
-                    <p className={styles.groupLabel}>{group.label}</p>
-                    <div className={styles.chips}>
-                      {group.items.map((item) => (
-                        <button
-                          type="button"
-                          key={item}
-                          className={`${styles.chip} ${epithet === item ? styles.chipOn : ''}`}
-                          onClick={() => setEpithet(item)}
-                        >
-                          {item}
-                        </button>
-                      ))}
-                    </div>
+              <div className={styles.epithetPicker}>
+                <p className={styles.selectedEpithet} aria-live="polite">
+                  {epithet ? `「 ${epithet} 」` : '칭호를 골라 주세요'}
+                </p>
+                <div className={styles.epithetTabs} role="tablist" aria-label="칭호 종류">
+                  {EPITHET_GROUPS.map((group) => (
+                    <button
+                      type="button"
+                      role="tab"
+                      id={`epithet-tab-${group.id}`}
+                      aria-controls="epithet-options"
+                      aria-selected={activeEpithetGroup.id === group.id}
+                      className={`${styles.epithetTab} ${activeEpithetGroup.id === group.id ? styles.epithetTabOn : ''}`}
+                      key={group.id}
+                      onClick={() => {
+                        setActiveEpithetGroupId(group.id);
+                        setShowAllEpithets(false);
+                        setEditingCustomEpithet(false);
+                      }}
+                    >
+                      {group.label}
+                    </button>
+                  ))}
+                </div>
+                <div
+                  id="epithet-options"
+                  className={styles.epithetOptions}
+                  role="tabpanel"
+                  aria-labelledby={`epithet-tab-${activeEpithetGroup.id}`}
+                >
+                  <p className={styles.groupDescription}>{activeEpithetGroup.description}</p>
+                  <div className={styles.chips}>
+                    {visibleEpithets.map((item) => (
+                      <button
+                        type="button"
+                        key={item}
+                        className={`${styles.chip} ${epithet === item ? styles.chipOn : ''}`}
+                        onClick={() => {
+                          setEpithet(item);
+                          setEditingCustomEpithet(false);
+                        }}
+                      >
+                        {item}
+                      </button>
+                    ))}
                   </div>
-                ))}
+                  <div className={styles.epithetActions}>
+                    <button
+                      type="button"
+                      className={styles.moreEpithets}
+                      aria-expanded={showAllEpithets}
+                      onClick={() => setShowAllEpithets((value) => !value)}
+                    >
+                      {showAllEpithets ? '간단히 보기' : '8개 더 보기'}
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.moreEpithets}
+                      aria-expanded={editingCustomEpithet}
+                      onClick={() => setEditingCustomEpithet((value) => !value)}
+                    >
+                      직접 써 보기
+                    </button>
+                  </div>
+                  {editingCustomEpithet && (
+                    <label className={styles.customEpithet}>
+                      <span className="srOnly">직접 쓴 칭호</span>
+                      <input
+                        className={styles.input}
+                        value={customEpithet}
+                        maxLength={CUSTOM_EPITHET_MAX}
+                        placeholder="예) 달의 비밀을 간직한"
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          setCustomEpithet(value);
+                          setEpithet(value);
+                        }}
+                      />
+                      <span className={`mono ${styles.countTiny}`}>
+                        {customEpithet.length} / {CUSTOM_EPITHET_MAX}
+                      </span>
+                    </label>
+                  )}
+                </div>
               </div>
             </div>
 

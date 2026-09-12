@@ -174,6 +174,46 @@
 }
 
 /* ---------------- 완성 연출 ---------------- */
+.completionMyth {
+  opacity: 0;
+  animation: mythRise 2750ms 380ms var(--ease-soft) both;
+}
+
+.completionMythArt,
+.completionMythAura {
+  transform-origin: center;
+}
+
+.completionMythArt {
+  opacity: 0.88;
+  filter: saturate(0.82) contrast(1.08) drop-shadow(0 0 1.5px rgba(232, 193, 88, 0.72));
+  animation: mythBreathe 2750ms 380ms ease-out both;
+}
+
+.completionMythAura {
+  opacity: 0.38;
+  filter: blur(1.1px) brightness(1.24) drop-shadow(0 0 3px rgba(232, 193, 88, 0.82));
+  animation: mythAura 2750ms 380ms ease-out both;
+}
+
+@keyframes mythRise {
+  0% { opacity: 0; }
+  24% { opacity: 0.5; }
+  58%, 100% { opacity: 0.92; }
+}
+
+@keyframes mythBreathe {
+  0% { transform: scale(0.96); opacity: 0; }
+  38% { transform: scale(1.012); opacity: 0.94; }
+  100% { transform: scale(1); opacity: 0.88; }
+}
+
+@keyframes mythAura {
+  0% { transform: scale(0.94); opacity: 0; }
+  45% { transform: scale(1.035); opacity: 0.55; }
+  100% { transform: scale(1.015); opacity: 0.32; }
+}
+
 .completionSpark {
   --spark-lead: 0;
   stroke-linecap: round;
@@ -203,6 +243,14 @@
   .completionSpark {
     display: none;
   }
+
+  .completionMyth,
+  .completionMythArt,
+  .completionMythAura {
+    animation: none;
+  }
+
+  .completionMyth { opacity: 0.88; }
 }
 
 /* design.md 6장: 전체 선이 골드로 동시에 밝아지는 pulse */

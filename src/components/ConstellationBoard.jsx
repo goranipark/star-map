@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import styles from './ConstellationBoard.module.css';
 import StarGlyph from './StarGlyph.jsx';
 import { fitBoardCamera } from '../game/boardCamera.js';
 
 import { allSkyStars } from '../game/sky.js';
 import { answerLineSet, lineKey } from '../game/constellations.js';
+import { completionArtFor, completionArtTransform } from '../game/completionReveal.js';
+import { cutOutNavyBackground } from '../game/artCutout.js';
 import {
   SKY,
   boundingCircleOf,
@@ -14,7 +16,7 @@ import {
 } from '../game/projection.js';
 
 /** 별자리 완성 후 이야기 화면으로 넘어가기까지 축하 연출을 보여주는 시간. */
-const CELEBRATE_MS = 1800;
+const CELEBRATE_MS = 3400;
 /** 오답 선이 붉게 떴다가 사라지는 시간 (design.md 6장). */
 const WRONG_MS = 400;
 /** 스테이지 시작 시 밤하늘 전체를 보여주는 시간. 그 뒤 별자리로 확대한다. */
@@ -51,6 +53,8 @@ export default function ConstellationBoard({
   fitViewport = false,
 }) {
   const free = mode === 'free';
+  const completionMaskId = useId().replaceAll(':', '');
+  const completionFeatherId = `${completionMaskId}-feather`;
   const groupRef = useRef(null);
   const svgRef = useRef(null);
   const overviewTimer = useRef(null);
@@ -136,6 +140,16 @@ export default function ConstellationBoard({
     () => Object.fromEntries(stars.map((s) => [s.id, s])),
     [stars]
   );
+
+  const completionArt = useMemo(() => completionArtFor(constellation), [constellation]);
+  const completionTransform = useMemo(
+    () => completionArtTransform(constellation, starById),
+    [constellation, starById]
+  );
+  const completionArtSource = completionArt
+    ? `${import.meta.env.BASE_URL}${completionArt.replace(/^\/+/, '')}`
+    : null;
+  const completionArtUrl = useTransparentCompletionArt(completionArtSource);
 
   /* ---------------------------------------------------------------
      확대 위치 — 별자리 전체 + 북극성이 함께 들어오도록 잡는다.
@@ -427,6 +441,37 @@ export default function ConstellationBoard({
         if (!event.currentTarget.hasPointerCapture?.(event.pointerId)) cancelPointer(event);
       }}
     >
+      <defs>
+        <filter
+          id={completionFeatherId}
+          x="-20%"
+          y="-20%"
+          width="140%"
+          height="140%"
+          colorInterpolationFilters="sRGB"
+        >
+          <feGaussianBlur stdDeviation="7" />
+        </filter>
+        <mask
+          id={completionMaskId}
+          x="-10"
+          y="-10"
+          width="120"
+          height="120"
+          maskUnits="userSpaceOnUse"
+          maskContentUnits="userSpaceOnUse"
+        >
+          <rect x="-10" y="-10" width="120" height="120" fill="black" />
+          <ellipse
+            cx="50"
+            cy="50"
+            rx="68"
+            ry="64"
+            fill="white"
+            filter={`url(#${completionFeatherId})`}
+          />
+        </mask>
+      </defs>
       <g
         ref={groupRef}
         className={styles.sky}
@@ -501,6 +546,36 @@ export default function ConstellationBoard({
               style={{ animationDelay: `${s.twinkleDelay}s` }}
             />
           ))}
+
+        {/* 완성 순간, 정확한 별 좌표에 맞춰 신화 속 형상이 별빛처럼 떠오른다. */}
+        {celebrating && completionArtUrl && completionTransform && (
+          <g
+            className={styles.completionMyth}
+            transform={completionTransform.svg}
+            mask={`url(#${completionMaskId})`}
+            aria-hidden="true"
+            pointerEvents="none"
+          >
+            <image
+              className={styles.completionMythAura}
+              href={completionArtUrl}
+              x="0"
+              y="0"
+              width="100"
+              height="100"
+              preserveAspectRatio="xMidYMid meet"
+            />
+            <image
+              className={styles.completionMythArt}
+              href={completionArtUrl}
+              x="0"
+              y="0"
+              width="100"
+              height="100"
+              preserveAspectRatio="xMidYMid meet"
+            />
+          </g>
+        )}
 
         {/* 지금까지 이은 정답 선 */}
         <g className={styles.drawnGroup}>
@@ -634,4 +709,59 @@ export default function ConstellationBoard({
     </p>
     </>
   );
+}
+
+const transparentArtCache = new Map();
+
+/**
+ * SVG 필터에 맡기지 않고 Canvas에서 실제 투명 PNG를 만든다.
+ * 이렇게 해야 브라우저·GPU별 색상 보간 차이가 있어도 사각 바탕이 다시 나타나지 않는다.
+ */
+function useTransparentCompletionArt(source) {
+  const [transparentSource, setTransparentSource] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    setTransparentSource(null);
+    if (!source) return () => { active = false; };
+
+    let prepared = transparentArtCache.get(source);
+    if (!prepared) {
+      prepared = prepareTransparentArt(source);
+      transparentArtCache.set(source, prepared);
+    }
+    prepared.then((url) => {
+      if (active) setTransparentSource(url);
+    });
+    return () => { active = false; };
+  }, [source]);
+
+  return transparentSource;
+}
+
+function prepareTransparentArt(source) {
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.decoding = 'async';
+    image.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const context = canvas.getContext('2d', { willReadFrequently: true });
+      if (!context) {
+        resolve(null);
+        return;
+      }
+      context.drawImage(image, 0, 0);
+      const frame = context.getImageData(0, 0, canvas.width, canvas.height);
+      cutOutNavyBackground(frame.data);
+      context.putImageData(frame, 0, 0);
+      canvas.toBlob(
+        (blob) => resolve(blob ? URL.createObjectURL(blob) : null),
+        'image/png'
+      );
+    };
+    image.onerror = () => resolve(null);
+    image.src = source;
+  });
 }

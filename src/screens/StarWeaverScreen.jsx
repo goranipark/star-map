@@ -11,6 +11,7 @@ import {
 } from '../game/epithets.js';
 import { downloadCardImage } from '../game/cardImage.js';
 import { MAX_MY_CONSTELLATIONS } from '../game/progress.js';
+import { emptySketch, isUsableSketch } from '../game/constellationSketch.js';
 
 /** 카드가 성립하려면 최소한 이만큼은 이어야 한다. */
 const MIN_LINES = 2;
@@ -55,6 +56,10 @@ export default function StarWeaverScreen({ onSave, onExit, onFeedback, myConstel
   const [name, setName] = useState(draft?.name ?? '');
   const [power, setPower] = useState(draft?.power ?? '');
   const [author, setAuthor] = useState(draft?.author ?? '');
+  const [sketch, setSketch] = useState(
+    () => isUsableSketch(draft?.sketch) ? draft.sketch : emptySketch()
+  );
+  const [drawingSketch, setDrawingSketch] = useState(false);
 
   const [saved, setSaved] = useState(false);
   const [finishedCard, setFinishedCard] = useState(draft?.finishedCard ?? null);
@@ -66,8 +71,8 @@ export default function StarWeaverScreen({ onSave, onExit, onFeedback, myConstel
     && !myConstellations.some((c) => c.id === finishedCard?.id);
 
   useEffect(() => {
-    onDraftChange?.(saved ? null : { version: 1, step, lines, epithet, name, power, author, finishedCard });
-  }, [step, lines, epithet, name, power, author, finishedCard, saved, onDraftChange]);
+    onDraftChange?.(saved ? null : { version: 1, step, lines, epithet, name, power, author, sketch, finishedCard });
+  }, [step, lines, epithet, name, power, author, sketch, finishedCard, saved, onDraftChange]);
 
   useEffect(() => {
     if (!conflict) return;
@@ -76,11 +81,19 @@ export default function StarWeaverScreen({ onSave, onExit, onFeedback, myConstel
     setFinishedCard(null);
   }, [conflict]);
 
-  const handleLines = useCallback((next) => setLines(next), []);
+  const handleLines = useCallback((next) => {
+    setLines((previous) => {
+      if (JSON.stringify(previous) !== JSON.stringify(next) && sketch.strokes.length) {
+        setSketch(emptySketch());
+      }
+      return next;
+    });
+  }, [sketch.strokes.length]);
 
   const clearAll = () => {
     setClearToken((n) => n + 1);
     setLines([]);
+    setSketch(emptySketch());
   };
 
   /** 이은 선에 쓰인 별만 모아 성좌 하나를 만든다. */
@@ -99,13 +112,14 @@ export default function StarWeaverScreen({ onSave, onExit, onFeedback, myConstel
       isMine: true,
       stars,
       lines,
+      ...(sketch.strokes.length ? { sketch } : {}),
       card: {
         epithet: epithet || '이름 없는',
         power: power.trim() || '아직 권능을 적지 않았어요.',
       },
       author: author.trim(),
     };
-  }, [lines, name, epithet, power, author]);
+  }, [lines, name, epithet, power, author, sketch]);
 
   const enoughLines = lines.length >= MIN_LINES;
   const cardReady = Boolean(epithet && name.trim() && power.trim());
@@ -137,6 +151,7 @@ export default function StarWeaverScreen({ onSave, onExit, onFeedback, myConstel
       createdAt: new Date().toISOString(),
     };
     setFinishedCard(finished);
+    setDrawingSketch(false);
     setIsSaving(true);
     const ok = await onSave?.(finished, atCapacity ? replaceId : null, atCapacity ? chosenCard : null);
     setIsSaving(false);
@@ -219,7 +234,45 @@ export default function StarWeaverScreen({ onSave, onExit, onFeedback, myConstel
       {step === 2 && (
         <>
           <div className={styles.cardArea}>
-            <ConstellationCard constellation={myConstellation} large />
+            <ConstellationCard
+              constellation={myConstellation}
+              large
+              editableSketch={drawingSketch}
+              onSketchChange={setSketch}
+            />
+            <section className={styles.sketchTools} aria-label="별자리 상상화 도구">
+              <div className={styles.sketchIntro}>
+                <span className={styles.optional}>선택 활동</span>
+                <strong>별자리 상상화</strong>
+                <p>별의 배열에서 떠오른 모습을 선으로 표현해 보세요.</p>
+              </div>
+              <div className={styles.sketchActions}>
+                <button
+                  type="button"
+                  className={drawingSketch ? 'btnPrimary' : 'btnGhost'}
+                  onClick={() => setDrawingSketch((value) => !value)}
+                >
+                  {drawingSketch ? '그리기 마치기' : '상상선 그리기'}
+                </button>
+                <button
+                  type="button"
+                  className="btnGhost"
+                  disabled={!sketch.strokes.length}
+                  onClick={() => setSketch({ ...sketch, strokes: sketch.strokes.slice(0, -1) })}
+                >
+                  실행 취소
+                </button>
+                <button
+                  type="button"
+                  className="btnGhost"
+                  disabled={!sketch.strokes.length}
+                  onClick={() => setSketch(emptySketch())}
+                >
+                  그림 지우기
+                </button>
+              </div>
+              {drawingSketch && <p className={styles.drawingHint}>왼쪽 카드의 별자리 위에 손가락이나 마우스로 그려 보세요.</p>}
+            </section>
           </div>
 
           <aside className={styles.panel}>
@@ -374,7 +427,7 @@ export default function StarWeaverScreen({ onSave, onExit, onFeedback, myConstel
             )}
 
             <div className={styles.actions}>
-              <button type="button" className="btnGhost" onClick={() => setStep(1)}>
+              <button type="button" className="btnGhost" onClick={() => { setDrawingSketch(false); setStep(1); }}>
                 별 다시 잇기
               </button>
               <button type="button" className="btnPrimary" onClick={handleSave} disabled={isSaving || !cardReady || (atCapacity && !replaceId)}>

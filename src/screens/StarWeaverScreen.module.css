@@ -23,6 +23,61 @@
   width: min(100%, 360px);
 }
 
+.cardArea {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+}
+
+.sketchTools {
+  padding: 12px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+  background: rgba(9, 27, 41, .88);
+}
+
+.sketchIntro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 8px;
+}
+
+.sketchIntro strong { color: var(--gold); font-size: 14px; }
+.sketchIntro p { flex-basis: 100%; color: var(--text-muted); font-size: 12px; line-height: 1.5; }
+
+.optional {
+  padding: 2px 6px;
+  border: 1px solid rgba(120, 197, 197, .35);
+  border-radius: 999px;
+  color: #9fcfd0;
+  font-size: 10px;
+}
+
+.sketchActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 9px;
+}
+
+.sketchActions button {
+  flex: 1 1 auto;
+  min-height: 38px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.sketchActions button:disabled { opacity: .35; }
+
+.drawingHint {
+  margin-top: 8px;
+  color: #bcd7d8;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 /* ---------------- 오른쪽 안내 패널 ---------------- */
 .panel {
   flex: 0 0 330px;

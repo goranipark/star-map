@@ -36,6 +36,28 @@ button.card:disabled {
   border: 1px solid var(--hairline);
 }
 
+.drawSurface { fill: transparent; }
+
+.sketchLine {
+  fill: none;
+  stroke: #78c5c5;
+  stroke-width: 2.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: .58;
+  filter: drop-shadow(0 0 1.3px rgba(120, 197, 197, .35));
+  pointer-events: none;
+}
+
+.previewLine { opacity: .86; }
+
+.drawingFigure {
+  cursor: crosshair;
+  touch-action: none;
+  border-color: var(--gold);
+  box-shadow: inset 0 0 28px rgba(120, 197, 197, .08);
+}
+
 .compact .figure {
   width: 64px;
   height: 64px;

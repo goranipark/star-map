@@ -117,6 +117,7 @@ test('손상된 작품만 제외하고 정상 작품과 진행 기록은 보존�
     (c) => { c.name = {}; },
     (c) => { c.card.power = {}; },
     (c) => { c.author = []; },
+    (c) => { c.sketch = { version: 1, strokes: [[[10, 10], [120, 20]]] }; },
   ];
   for (const mutate of mutations) {
     const broken = mine(2);
@@ -134,6 +135,17 @@ test('손상된 작품만 제외하고 정상 작품과 진행 기록은 보존�
     broken.stars[0].ra = value;
     assert.equal(isUsableMyConstellation(broken), false);
   }
+});
+
+test('정상적인 별자리 상상화는 작품과 함께 저장하고 다시 읽는다', () => {
+  useStorage();
+  const card = {
+    ...mine(1),
+    sketch: { version: 1, strokes: [[[10, 12], [30, 42], [70, 55]]] },
+  };
+  const saved = saveMyConstellation(empty(), card);
+  assert.deepEqual(saved.myConstellations[0].sketch, card.sketch);
+  assert.deepEqual(loadProgress().myConstellations[0].sketch, card.sketch);
 });
 
 test('손상된 저장값은 초기 상태로 복구한다', () => {

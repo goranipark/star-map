@@ -1,4 +1,5 @@
 import { fitConstellationToBox, radiusForMagnitude } from './projection.js';
+import { isUsableSketch } from './constellationSketch.js';
 
 /**
  * 성좌 카드를 PNG 그림 파일로 저장한다 (ToDo.md Phase 4-B).
@@ -141,9 +142,33 @@ export function drawCard(canvas, constellation) {
   ctx.fill();
   ctx.stroke();
 
-  const { stars } = fitConstellationToBox(constellation, { size: boxSize, padding: 84 });
+  const { stars } = fitConstellationToBox(constellation, { size: boxSize, padding: boxSize * 0.14 });
   const byId = Object.fromEntries(stars.map((s) => [s.id, s]));
   const at = (id) => ({ x: boxX + byId[id].x, y: boxY + byId[id].y });
+
+  // 학생의 상상선은 별과 연결선 뒤에 놓아 관찰한 별의 배열을 가리지 않는다.
+  if (isUsableSketch(constellation.sketch) && constellation.sketch.strokes.length) {
+    ctx.save();
+    roundRect(ctx, boxX, boxY, boxSize, boxSize, 20);
+    ctx.clip();
+    ctx.strokeStyle = 'rgba(120, 197, 197, 0.62)';
+    ctx.lineWidth = boxSize * 0.021;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.shadowColor = 'rgba(120, 197, 197, 0.35)';
+    ctx.shadowBlur = 10;
+    for (const stroke of constellation.sketch.strokes) {
+      ctx.beginPath();
+      stroke.forEach(([x, y], index) => {
+        const px = boxX + x * boxSize / 100;
+        const py = boxY + y * boxSize / 100;
+        if (index === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      });
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
 
   // 선 — 넓고 흐린 빛 위에 가늘고 밝은 심지
   for (const pass of [

@@ -2,6 +2,7 @@ import { allSkyStars } from './sky.js';
 import { lineKey } from './constellations.js';
 import { isUsableMyConstellation } from './progress.js';
 import { DRAFT_STORAGE_PREFIX, DRAFT_TAB_STORAGE_KEY } from './storageKeys.js';
+import { isUsableSketch } from './constellationSketch.js';
 
 const PREFIX = DRAFT_STORAGE_PREFIX;
 const TAB_KEY = DRAFT_TAB_STORAGE_KEY;
@@ -15,6 +16,7 @@ export function validateDraft(draft) {
   for (const field of ['name', 'epithet', 'power', 'author']) {
     if (typeof draft[field] !== 'string') return false;
   }
+  if (draft.sketch !== undefined && !isUsableSketch(draft.sketch)) return false;
   const keys = new Set();
   for (const line of draft.lines) {
     if (!Array.isArray(line) || line.length !== 2 || !ids.has(line[0])

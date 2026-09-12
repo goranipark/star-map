@@ -29,6 +29,9 @@ try {
     const [code] = await once(child, 'exit');
     clearTimeout(timer);
     if (code !== 0) throw new Error(`${script} failed (${code})`);
+    // Windows에서 직전 Edge 프로세스가 완전히 정리되기 전에 다음 다중 탭 검사를
+    // 시작하면 포인터 입력을 놓칠 수 있어 짧게 양보한다.
+    await delay(750);
   }
 } finally {
   if (preview.exitCode === null) {

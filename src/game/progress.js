@@ -1,5 +1,6 @@
 import { constellations, getConstellation } from './constellations.js';
 import { DRAFT_STORAGE_PREFIX, PROGRESS_STORAGE_KEY } from './storageKeys.js';
+import { isUsableSketch } from './constellationSketch.js';
 
 /**
  * 진행 상황 저장 — ToDo.md Phase 2.
@@ -23,7 +24,8 @@ import { DRAFT_STORAGE_PREFIX, PROGRESS_STORAGE_KEY } from './storageKeys.js';
  * {
  *   id: "my-1757...", name: "용감한 고양이", aka: "내가 만든 성좌",
  *   stars: [{ id, ra, dec, mag }], lines: [[별id, 별id], ...],
- *   card: { epithet, power }, author: "", createdAt: "..."
+ *   card: { epithet, power }, author: "", createdAt: "...",
+ *   sketch?: { version: 1, strokes: [[[x, y], ...], ...] }
  * }
  */
 
@@ -107,6 +109,7 @@ export function isUsableMyConstellation(c) {
   for (const field of ['aka', 'latinName', 'author', 'createdAt']) {
     if (c[field] !== undefined && !text(c[field])) return false;
   }
+  if (c.sketch !== undefined && !isUsableSketch(c.sketch)) return false;
   const ids = new Set();
   for (const star of c.stars) {
     if (!star || !text(star.id) || !star.id || ids.has(star.id)

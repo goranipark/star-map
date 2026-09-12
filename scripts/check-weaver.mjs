@@ -87,6 +87,16 @@ try {
   await expectEnabled(next, false, '이미 이은 선을 다시 이으면 지워진다');
   await tap(a); await tap(b);
   await next.click();
+  await page.getByRole('button', { name: '상상선 그리기' }).click();
+  const sketchArea = page.getByRole('application', { name: '별자리 상상화 그리기 영역' });
+  const sketchBox = await sketchArea.boundingBox();
+  await page.mouse.move(sketchBox.x + sketchBox.width * .24, sketchBox.y + sketchBox.height * .28);
+  await page.mouse.down();
+  await page.mouse.move(sketchBox.x + sketchBox.width * .48, sketchBox.y + sketchBox.height * .18, { steps: 5 });
+  await page.mouse.move(sketchBox.x + sketchBox.width * .72, sketchBox.y + sketchBox.height * .42, { steps: 5 });
+  await page.mouse.up();
+  assert.ok(await sketchArea.locator('path[class*="sketchLine"]').count() >= 1, '상상선 표시');
+  await page.getByRole('button', { name: '그리기 마치기' }).click();
   await page.getByRole('button', { name: '골라 줘' }).click();
   await page.getByLabel('이름', { exact: true }).fill('회귀 테스트');
   await page.getByPlaceholder('예) 무서운 꿈을 쫓아내 준다').fill('기록을 지킨다');
@@ -109,6 +119,7 @@ try {
   assert.equal(saved.length, full ? 12 : 1);
   const created = saved.find((card) => card.name === '회귀 테스트');
   assert.equal(created.lines.length, 2);
+  assert.ok(created.sketch.strokes[0].length >= 2, '상상화 좌표 저장');
   if (full) assert.deepEqual(saved.filter((card) => card.id !== created.id), originals.filter((card) => card.id !== 'my-5'));
   assert.deepEqual(errors, []);
   console.log(`PASS: 멀티포인터·취소·화면 밖 종료, 단계 왕복, 저장 실패·재시도${full ? ', 선택 작품만 교체' : ''}`);

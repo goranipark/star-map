@@ -63,6 +63,8 @@ export default function App() {
   );
   /** 도감에서 "다시 보기"로 들어온 경우 — 완성 축하 문구를 띄우지 않는다. */
   const [replaying, setReplaying] = useState(false);
+  /** 도감에서 바로 별 잇기로 들어온 경우 — 뒤로 가기는 도감으로 돌아간다. */
+  const [fromAlmanac, setFromAlmanac] = useState(false);
   const [updateRegistration, setUpdateRegistration] = useState(null);
   const [reloadDeferred, setReloadDeferred] = useState(false);
   const [draft, setDraft] = useState(loadDraft);
@@ -130,6 +132,7 @@ export default function App() {
     setCurrentId(target.id);
     setLastPlayed(target.id);
     setReplaying(false);
+    setFromAlmanac(false);
     setScreen(SCREEN.PUZZLE);
   }, [completedIds, setLastPlayed]);
 
@@ -146,6 +149,7 @@ export default function App() {
     setCurrentId(upcoming.id);
     setLastPlayed(upcoming.id);
     setReplaying(false);
+    setFromAlmanac(false);
     setScreen(SCREEN.PUZZLE);
   }, [upcoming, setLastPlayed]);
 
@@ -155,6 +159,15 @@ export default function App() {
     setReplaying(true);
     setScreen(SCREEN.STORY);
   }, []);
+
+  /** 도감에서 아직 찾지 못한 별자리를 눌러 바로 별 잇기로 들어간다 */
+  const handleFindConstellation = useCallback((constellationId) => {
+    setCurrentId(constellationId);
+    setLastPlayed(constellationId);
+    setReplaying(false);
+    setFromAlmanac(true);
+    setScreen(SCREEN.PUZZLE);
+  }, [setLastPlayed]);
 
   const handleReset = useCallback(async () => {
     if (await reset() !== true) return false;
@@ -184,7 +197,9 @@ export default function App() {
           }}
           onBack={() =>
             go(
-              (replaying && screen === SCREEN.STORY) || screen === SCREEN.STAR_WEAVER
+              (replaying && screen === SCREEN.STORY)
+              || (fromAlmanac && screen === SCREEN.PUZZLE)
+              || screen === SCREEN.STAR_WEAVER
                 ? SCREEN.ALMANAC
                 : SCREEN.TITLE
             )
@@ -238,7 +253,9 @@ export default function App() {
             completedIds={completedIds}
             myConstellations={myConstellations}
             starWeavingUnlocked={starWeavingUnlocked}
+            nextId={upcoming?.id ?? null}
             onReplayStory={handleReplayStory}
+            onFindConstellation={handleFindConstellation}
             onStartWeaving={() => go(SCREEN.STAR_WEAVER)}
             onRemoveMyConstellation={removeMyConstellation}
             onBackToTitle={() => go(SCREEN.TITLE)}

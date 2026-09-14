@@ -17,7 +17,9 @@ export default function AlmanacScreen({
   completedIds = [],
   myConstellations = [],
   starWeavingUnlocked = false,
+  nextId = null,
   onReplayStory,
+  onFindConstellation,
   onStartWeaving,
   onRemoveMyConstellation,
   onBackToTitle,
@@ -117,15 +119,38 @@ export default function AlmanacScreen({
           <h2 className={styles.listTitle}>나의 밤하늘 도감</h2>
         </header>
 
-        {constellations.map((c) => (
-          <ConstellationCard
-            key={c.id}
-            constellation={c}
-            locked={!done.has(c.id)}
-            compact
-            onClick={() => onReplayStory?.(c.id)}
-          />
-        ))}
+        {constellations.map((c) => {
+          const locked = !done.has(c.id);
+          const card = (
+            <ConstellationCard
+              key={c.id}
+              constellation={c}
+              locked={locked}
+              compact
+              onClick={() => onReplayStory?.(c.id)}
+            />
+          );
+
+          /*
+            지금 도전할 수 있는 별자리(순서상 바로 다음 하나)에만 찾으러 가는 버튼을 둔다.
+            도감에서 다음 별자리를 확인한 뒤 뒤로 가기로 되돌아 나올 필요가 없도록.
+            그 뒤 별자리들은 아직 잠겨 있으므로(progress.js의 isUnlocked) 버튼을 달지 않는다.
+          */
+          if (!locked || c.id !== nextId || !onFindConstellation) return card;
+
+          return (
+            <div key={c.id} className={styles.findItem}>
+              {card}
+              <button
+                type="button"
+                className={`btnPrimary ${styles.findBtn}`}
+                onClick={() => onFindConstellation(c.id)}
+              >
+                이 별자리 찾으러 가기
+              </button>
+            </div>
+          );
+        })}
 
         {/* ---------------- 나만의 성좌 ---------------- */}
         <section className={styles.mine}>

@@ -23,6 +23,24 @@ const CUSTOM_EPITHET_MAX = 24;
 const EPITHETS_AT_FIRST = 8;
 
 /**
+ * 도감에 담아 둔 성좌를 편집 화면이 읽을 수 있는 초안 모양으로 되돌린다.
+ * 별은 이미 이어 두었으니 카드 채우기(2단계)부터 보여 준다.
+ */
+function draftFromCard(card) {
+  return {
+    version: 1,
+    step: 2,
+    lines: card.lines ?? [],
+    epithet: card.card?.epithet ?? '',
+    name: card.name ?? '',
+    power: card.card?.power ?? '',
+    author: card.author ?? '',
+    sketch: isUsableSketch(card.sketch) ? card.sketch : emptySketch(),
+    finishedCard: null,
+  };
+}
+
+/**
  * 나만의 성좌 만들기 (ToDo.md Phase 4-B).
  *
  * 도감 5장을 다 모은 뒤에 열린다. 카드 5장을 보며 형식을 익힌 아이가
@@ -34,41 +52,50 @@ const EPITHETS_AT_FIRST = 8;
  * 세 걸음으로 나눠 한 화면에 하나씩만 시킨다.
  *   1) 별 잇기  2) 카드 채우기  3) 완성
  */
-export default function StarWeaverScreen({ onSave, onExit, onFeedback, myConstellations = [], draft, onDraftChange, draftFailed, conflict }) {
-  const [step, setStep] = useState(draft?.step ?? 1);
-  const [lines, setLines] = useState(draft?.lines ?? []);
+export default function StarWeaverScreen({ onSave, onExit, onFeedback, myConstellations = [], editing = null, draft, onDraftChange, draftFailed, conflict }) {
+  /*
+    editing이 있으면 도감의 작품을 고치는 중이다. 만들다 만 초안 대신 그 작품에서 시작하고,
+    저장할 때도 새 칸을 쓰지 않고 원래 칸을 덮어쓴다(progress.js의 saveMyConstellation).
+    App이 editing마다 이 화면을 새로 마운트하므로 초기값은 한 번만 읽힌다.
+  */
+  const initial = editing ? draftFromCard(editing) : draft;
+
+  const [step, setStep] = useState(initial?.step ?? 1);
+  const [lines, setLines] = useState(initial?.lines ?? []);
   const [clearToken, setClearToken] = useState(0);
 
-  const [epithet, setEpithet] = useState(draft?.epithet ?? '');
-  const draftEpithetGroup = epithetGroupFor(draft?.epithet);
+  const [epithet, setEpithet] = useState(initial?.epithet ?? '');
+  const draftEpithetGroup = epithetGroupFor(initial?.epithet);
   const [activeEpithetGroupId, setActiveEpithetGroupId] = useState(
     draftEpithetGroup?.id ?? EPITHET_GROUPS[0].id
   );
   const [showAllEpithets, setShowAllEpithets] = useState(
-    () => Boolean(draftEpithetGroup && draftEpithetGroup.items.indexOf(draft?.epithet) >= EPITHETS_AT_FIRST)
+    () => Boolean(draftEpithetGroup && draftEpithetGroup.items.indexOf(initial?.epithet) >= EPITHETS_AT_FIRST)
   );
   const [editingCustomEpithet, setEditingCustomEpithet] = useState(
-    () => Boolean(draft?.epithet && !draftEpithetGroup)
+    () => Boolean(initial?.epithet && !draftEpithetGroup)
   );
   const [customEpithet, setCustomEpithet] = useState(
-    () => draft?.epithet && !draftEpithetGroup ? draft.epithet : ''
+    () => initial?.epithet && !draftEpithetGroup ? initial.epithet : ''
   );
-  const [name, setName] = useState(draft?.name ?? '');
-  const [power, setPower] = useState(draft?.power ?? '');
-  const [author, setAuthor] = useState(draft?.author ?? '');
+  const [name, setName] = useState(initial?.name ?? '');
+  const [power, setPower] = useState(initial?.power ?? '');
+  const [author, setAuthor] = useState(initial?.author ?? '');
   const [sketch, setSketch] = useState(
-    () => isUsableSketch(draft?.sketch) ? draft.sketch : emptySketch()
+    () => isUsableSketch(initial?.sketch) ? initial.sketch : emptySketch()
   );
   const [drawingSketch, setDrawingSketch] = useState(false);
 
   const [saved, setSaved] = useState(false);
-  const [finishedCard, setFinishedCard] = useState(draft?.finishedCard ?? null);
+  const [finishedCard, setFinishedCard] = useState(initial?.finishedCard ?? null);
   const [isSaving, setIsSaving] = useState(false);
   const [downloadFailed, setDownloadFailed] = useState(false);
   const [replaceId, setReplaceId] = useState('');
   const [chosenCard, setChosenCard] = useState(null);
+  /** 이미 도감에 있는 칸을 덮어쓰는 중이면 칸이 가득 차도 교체를 물을 필요가 없다. */
+  const keepingId = finishedCard?.id ?? editing?.id;
   const atCapacity = myConstellations.length >= MAX_MY_CONSTELLATIONS
-    && !myConstellations.some((c) => c.id === finishedCard?.id);
+    && !myConstellations.some((c) => c.id === keepingId);
 
   useEffect(() => {
     onDraftChange?.(saved ? null : { version: 1, step, lines, epithet, name, power, author, sketch, finishedCard });
@@ -147,8 +174,9 @@ export default function StarWeaverScreen({ onSave, onExit, onFeedback, myConstel
     if (atCapacity && !replaceId) return;
     const finished = finishedCard ?? {
       ...myConstellation,
-      id: `my-${crypto.randomUUID()}`,
-      createdAt: new Date().toISOString(),
+      // 고치는 중이면 도감의 같은 칸을 그대로 쓴다. 만든 날짜도 처음 만든 날로 남긴다.
+      id: editing?.id ?? `my-${crypto.randomUUID()}`,
+      createdAt: editing?.createdAt ?? new Date().toISOString(),
     };
     setFinishedCard(finished);
     setDrawingSketch(false);
@@ -277,7 +305,7 @@ export default function StarWeaverScreen({ onSave, onExit, onFeedback, myConstel
 
           <aside className={styles.panel}>
             <p className="eyebrow">STEP 2 / 3</p>
-            <h2 className={styles.heading}>카드를 채워 주세요</h2>
+            <h2 className={styles.heading}>{editing ? '카드를 고쳐 주세요' : '카드를 채워 주세요'}</h2>
 
             <div className={styles.field}>
               <span className={styles.fieldLabel}>
@@ -431,7 +459,7 @@ export default function StarWeaverScreen({ onSave, onExit, onFeedback, myConstel
                 별 다시 잇기
               </button>
               <button type="button" className="btnPrimary" onClick={handleSave} disabled={isSaving || !cardReady || (atCapacity && !replaceId)}>
-                성좌 완성하기
+                {editing ? '고친 내용 저장하기' : '성좌 완성하기'}
               </button>
             </div>
           </aside>
@@ -447,9 +475,11 @@ export default function StarWeaverScreen({ onSave, onExit, onFeedback, myConstel
 
           <aside className={styles.panel}>
             <p className="eyebrow">STEP 3 / 3</p>
-            <h2 className={styles.heading}>성좌가 태어났어요</h2>
+            <h2 className={styles.heading}>{editing ? '성좌를 고쳤어요' : '성좌가 태어났어요'}</h2>
             <p className={styles.guide}>
-              {saved ? '도감 마지막 칸에 담았어요. ' : '기기에 저장하지 못했어요. 이 화면에서 다시 저장하거나 그림으로 내려받아 주세요. '}
+              {saved
+                ? (editing ? '도감에 고친 내용을 담았어요. ' : '도감 마지막 칸에 담았어요. ')
+                : '기기에 저장하지 못했어요. 이 화면에서 다시 저장하거나 그림으로 내려받아 주세요. '}
               그림으로 저장하면 선생님께 내거나 인쇄해서 붙일 수 있어요.
             </p>
 

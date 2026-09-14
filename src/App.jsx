@@ -65,6 +65,8 @@ export default function App() {
   const [replaying, setReplaying] = useState(false);
   /** 도감에서 바로 별 잇기로 들어온 경우 — 뒤로 가기는 도감으로 돌아간다. */
   const [fromAlmanac, setFromAlmanac] = useState(false);
+  /** 도감에서 "고치기"로 연 나만의 성좌. null이면 새로 만드는 중. */
+  const [editingCardId, setEditingCardId] = useState(null);
   const [updateRegistration, setUpdateRegistration] = useState(null);
   const [reloadDeferred, setReloadDeferred] = useState(false);
   const [draft, setDraft] = useState(loadDraft);
@@ -88,6 +90,7 @@ export default function App() {
     clearDraftMemory();
     setDraft(null);
     setDraftFailed(false);
+    setEditingCardId(null);
     if (screen === SCREEN.STAR_WEAVER) setScreen(SCREEN.ALMANAC);
   }, [screen, starWeavingUnlocked]);
 
@@ -169,6 +172,25 @@ export default function App() {
     setScreen(SCREEN.PUZZLE);
   }, [setLastPlayed]);
 
+  /**
+   * 도감에 담아 둔 나만의 성좌를 다시 열어 고친다.
+   * 만들다 만 초안과 섞이지 않도록, 고치는 동안에는 초안을 읽지도 쓰지도 않는다.
+   */
+  const editingCard = useMemo(
+    () => myConstellations.find((c) => c.id === editingCardId) ?? null,
+    [myConstellations, editingCardId]
+  );
+
+  const handleEditMyConstellation = useCallback((cardId) => {
+    setEditingCardId(cardId);
+    setScreen(SCREEN.STAR_WEAVER);
+  }, []);
+
+  const leaveWeaver = useCallback(() => {
+    setEditingCardId(null);
+    setScreen(SCREEN.ALMANAC);
+  }, []);
+
   const handleReset = useCallback(async () => {
     if (await reset() !== true) return false;
     clearDraftMemory();
@@ -176,6 +198,7 @@ export default function App() {
     setDraftFailed(false);
     setCurrentId(constellations[0].id);
     setReplaying(false);
+    setEditingCardId(null);
     return true;
   }, [reset]);
 
@@ -186,7 +209,11 @@ export default function App() {
 
       {screen !== SCREEN.TITLE && (
         <TopBar
-          title={SCREEN_TITLE[screen]}
+          title={
+            screen === SCREEN.STAR_WEAVER && editingCard
+              ? '나만의 성좌 고치기'
+              : SCREEN_TITLE[screen]
+          }
           completedCount={completedIds.length}
           soundOn={soundOn}
           onToggleSound={() => {
@@ -195,15 +222,15 @@ export default function App() {
             setAudioEnabled(next);
             if (next) unlockAudio();
           }}
-          onBack={() =>
+          onBack={() => {
+            if (screen === SCREEN.STAR_WEAVER) return leaveWeaver();
             go(
               (replaying && screen === SCREEN.STORY)
               || (fromAlmanac && screen === SCREEN.PUZZLE)
-              || screen === SCREEN.STAR_WEAVER
                 ? SCREEN.ALMANAC
                 : SCREEN.TITLE
-            )
-          }
+            );
+          }}
           onOpenAlmanac={
             screen === SCREEN.ALMANAC ? undefined : () => go(SCREEN.ALMANAC)
           }
@@ -256,8 +283,9 @@ export default function App() {
             nextId={upcoming?.id ?? null}
             onReplayStory={handleReplayStory}
             onFindConstellation={handleFindConstellation}
-            onStartWeaving={() => go(SCREEN.STAR_WEAVER)}
+            onStartWeaving={() => { setEditingCardId(null); go(SCREEN.STAR_WEAVER); }}
             onRemoveMyConstellation={removeMyConstellation}
+            onEditMyConstellation={handleEditMyConstellation}
             onBackToTitle={() => go(SCREEN.TITLE)}
             onReset={handleReset}
           />
@@ -265,13 +293,15 @@ export default function App() {
 
         {screen === SCREEN.STAR_WEAVER && (
           <StarWeaverScreen
-            draft={draft}
-            onDraftChange={updateDraft}
-            draftFailed={draftFailed}
+            key={editingCard?.id ?? 'new'}
+            editing={editingCard}
+            draft={editingCard ? null : draft}
+            onDraftChange={editingCard ? undefined : updateDraft}
+            draftFailed={editingCard ? false : draftFailed}
             conflict={conflict}
             myConstellations={myConstellations}
             onSave={saveMyConstellation}
-            onExit={() => go(SCREEN.ALMANAC)}
+            onExit={leaveWeaver}
             onFeedback={playFeedback}
           />
         )}

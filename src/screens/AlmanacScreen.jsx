@@ -22,6 +22,7 @@ export default function AlmanacScreen({
   onFindConstellation,
   onStartWeaving,
   onRemoveMyConstellation,
+  onEditMyConstellation,
   onBackToTitle,
   onReset,
 }) {
@@ -170,14 +171,27 @@ export default function AlmanacScreen({
               {myConstellations.map((c) => (
                 <div key={c.id} className={styles.mineItem}>
                   <ConstellationCard constellation={c} compact />
-                  <button
-                    type="button"
-                    className={styles.removeLink}
-                    onClick={() => onRemoveMyConstellation?.(c.id)}
-                    aria-label={`${c.name} 지우기`}
-                  >
-                    지우기
-                  </button>
+                  {/* 만든 뒤에도 마음이 바뀔 수 있으니 언제든 다시 열어 고칠 수 있게 둔다 */}
+                  <div className={styles.mineActions}>
+                    {onEditMyConstellation && (
+                      <button
+                        type="button"
+                        className={styles.mineLink}
+                        onClick={() => onEditMyConstellation(c.id)}
+                        aria-label={`${c.name} 고치기`}
+                      >
+                        고치기
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className={`${styles.mineLink} ${styles.removeLink}`}
+                      onClick={() => onRemoveMyConstellation?.(c.id)}
+                      aria-label={`${c.name} 지우기`}
+                    >
+                      지우기
+                    </button>
+                  </div>
                 </div>
               ))}
 

@@ -231,10 +231,15 @@
   position: relative;
 }
 
-.removeLink {
+.mineActions {
   position: absolute;
   top: var(--space-sm);
   right: var(--space-sm);
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.mineLink {
   min-height: 0;
   padding: 2px var(--space-sm);
   font-size: 11px;
@@ -242,6 +247,11 @@
   border: 1px solid var(--hairline);
   color: var(--text-muted);
   background: rgba(8, 15, 28, 0.7);
+}
+
+.mineLink:hover {
+  border-color: var(--gold);
+  color: var(--gold);
 }
 
 .removeLink:hover {

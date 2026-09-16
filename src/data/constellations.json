@@ -270,7 +270,7 @@
             "text": "큰곰자리에서 국자 모양을 이루는 일곱 별, 북두칠성이에요.\n국자 끝의 두 별을 다섯 배만큼 쭉 이어 가면 북극성을 만나요.",
             "art": "art/ursa-major-6.png",
             "overlay": [
-              "ursa-major"
+              { "id": "ursa-major", "x": 19, "y": -6.5, "scale": 0.83, "rotate": 0 }
             ],
             "isSkyCut": true
           }
